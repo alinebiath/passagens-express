@@ -87,6 +87,28 @@ void exibir_menu_principal() {
     printf(" 3 - Sair\n\n");
     printf(" Escolha a op%c%co: ", caracteres.cedilha, caracteres.atil);
 }
+
+/*
+    Função para apresentar os itinerários
+*/
+void exibir_itinerarios() {
+    limpar_console();
+    caracteres_acentuados caracteres = obter_caracteres_acentuados();
+
+    printf("\n");
+	printf(" Itinerarios\n\n");
+    printf(" 1 - Campinas x Santos\n");
+    printf(" 2 - Campinas x Jundiai\n");
+    printf(" 3 - Campinas x São Paulo\n");
+    printf(" 4 - Voltar ao menu anterior\n\n");
+    printf(" Escolha o itinerario: ");
+}
+
+
+void vender_passagem() {
+    exibir_itinerarios();
+}
+
 /*
 ================================================================================
 */
@@ -110,7 +132,7 @@ int main(int argc, char *argv[]) {
             break;
     
     	    case '1':
-                printf("\n Pressionou 1.");
+                vender_passagem();
                 getchar();
 	        break;
 
