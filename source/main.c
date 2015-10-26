@@ -2,37 +2,89 @@
 #include <stdlib.h>
 #include <windows.h>
 
-/*
-    TODO: 
-    - ver guia de estilo de comentário em C
-*/
+#define CEDILHA 135
+#define ATIL    198
+#define AAGUDO  160
+#define OTIL    228
 
-/*
-================================================================================
-    Estruturas de dados
-================================================================================
-*/
+#define VENDER_PASSAGEM 1
+#define CONSULTAR_CAIXA 2
+#define SAIR            3
 
-/*
-    Estrutura de dados para armezenar caracteres ascii acentuados que serão 
-    utilizados nas mensagens.
-*/ 
+//==============================================================================
+//    Estrutura de dados para armezenar caracteres ascii acentuados que serão 
+//    utilizados nas mensagens.
+//==============================================================================
 typedef struct {
     char cedilha;
     char atil;
     char aagudo;
     char otil;
 } caracteres_acentuados;
-/*
-================================================================================
-*/
 
-/*
-================================================================================
-    Funções auxiliares
-================================================================================
-    Função para limpar console
-*/
+
+//==============================================================================
+//    Estrutura de dados para armezenar dados de um itinerário.
+//==============================================================================
+typedef struct {
+    char codigo;
+    char origem[10];
+    char destino[10];
+    char data[10];
+    double valor;
+} itinerario ;
+
+
+//==============================================================================
+//    Declaração de funções.
+//==============================================================================
+void limpar_console();
+void vender_passagem(itinerario *i);
+void consultar_caixa();
+void exibir_itinerarios(itinerario *itinerarios);
+void exibir_menu_principal();
+void limpar_buffer_entrada();
+void opcao_invalida();
+void itinerarios_disponiveis(itinerario itinerarios[3]);
+
+//==============================================================================
+//    Função principal.
+//==============================================================================
+int main(int argc, char *argv[]) {
+
+    int opcao;
+    
+    itinerario itinerarios[3];
+    itinerarios_disponiveis(itinerarios);
+    
+    
+	/* executa até o usuário escolher SAIR */
+    do {
+		exibir_menu_principal();
+		
+		printf(" Escolha a op%c%co: ", CEDILHA, ATIL);
+        scanf("%d", &opcao);
+
+        if (opcao == VENDER_PASSAGEM) {
+            vender_passagem(itinerarios);
+        } else if (opcao == CONSULTAR_CAIXA) {
+            consultar_caixa();
+        } else if (opcao == SAIR) {
+            limpar_console();
+            printf("\n Saindo...\n");
+        } else {
+           opcao_invalida();
+		}
+	} while(opcao != SAIR);
+
+    getchar();
+
+    return 0;
+}
+
+//==============================================================================
+//    Função para limpar o console.
+//==============================================================================
 void limpar_console(){
 
     DWORD n;                            // Number of characters written
@@ -55,105 +107,95 @@ void limpar_console(){
 	// Reset the cursor to the top left position
 	SetConsoleCursorPosition(h, coord);
 }
+
+void vender_passagem(itinerario *i) {
+    	
+	/* executa até o usuário escolher voltar */
+    int itinerario;
+
+    do {
+        exibir_itinerarios(i);
+        printf(" Escolha o itiner%crio: ", AAGUDO);        
+
+        scanf("%d", &itinerario);
+        
+        if(itinerario >= 1 && itinerario <= 3) {
+            int indice = itinerario - 1;
+            printf("itinerario: %c", i[indice].codigo);
+            getchar();
+            getchar();
+        } else if(itinerario == 4) {
+        } else {
+            opcao_invalida();				
+        }
+	} while(itinerario != 4);
+}
+
+void consultar_caixa() {
+    limpar_console();
+    printf("\n");
+	printf(" Consultando Caixa\n\n");
+	fflush(stdin);
+	getchar();
+}
 /*
-================================================================================
-    Função que obtém uma estrutura do tipo "caracteres_acentuados"
+    Função para apresentar os itinerários
 */
-caracteres_acentuados obter_caracteres_acentuados(){
-
-    caracteres_acentuados caracteres;
-
-    caracteres.cedilha  = 135;
-    caracteres.atil     = 198; 
-    caracteres.aagudo   = 160;
-    caracteres.otil     = 228;
+void exibir_itinerarios(itinerario *i) {
+    limpar_console();
     
-    return caracteres;
+    printf("\n");
+	printf(" Itiner%crios\n\n", AAGUDO);
+
+    int n;
+    for(n = 0; n < 3; n++) {
+        printf(" %c - %s x %s :%.2f\n", i[n].codigo, i[n].origem, i[n].destino, i[n].valor);
+    }
+
+    printf(" 4 - Voltar ao menu anterior\n\n");
 }
 
 /*
     Função para apresentar o menu principal no console.
 */
 void exibir_menu_principal() {
-
     limpar_console();
 
-    caracteres_acentuados caracteres = obter_caracteres_acentuados();
-
 	printf("\n");
-	printf(" Menu de Op%c%ces\n\n", caracteres.cedilha, caracteres.otil);
+	printf(" Menu de Op%c%ces\n\n", CEDILHA, OTIL);
     printf(" 1 - Vender Passagem\n");
     printf(" 2 - Consultar Caixa\n");
     printf(" 3 - Sair\n\n");
-    printf(" Escolha a op%c%co: ", caracteres.cedilha, caracteres.atil);
 }
 
-/*
-    Função para apresentar os itinerários
-*/
-void exibir_itinerarios() {
-    limpar_console();
-    caracteres_acentuados caracteres = obter_caracteres_acentuados();
-
-    printf("\n");
-	printf(" Itinerarios\n\n");
-    printf(" 1 - Campinas x Santos\n");
-    printf(" 2 - Campinas x Jundiai\n");
-    printf(" 3 - Campinas x São Paulo\n");
-    printf(" 4 - Voltar ao menu anterior\n\n");
-    printf(" Escolha o itinerario: ");
+void limpar_buffer_entrada(){
+    fflush(stdin);
+    //fseek(stdin, 0, SEEK_END);
 }
 
-
-void vender_passagem() {
-    exibir_itinerarios();
-}
-
-/*
-================================================================================
-*/
-
-int main(int argc, char *argv[]) {
-
-    char opcao = '0';
-    caracteres_acentuados caracteres = obter_caracteres_acentuados();
-	
-	/* executa até o usuário escolher SAIR */
-	while(opcao != '3') {
-		exibir_menu_principal();
-
-        fgets(&opcao, 2, stdin);
-		fseek(stdin, 0, SEEK_END);	 	
-
-        switch (opcao) { 
-            case '\n':
-                printf("\n Pressionou ENTER.");
-                getchar();
-            break;
-    
-    	    case '1':
-                vender_passagem();
-                getchar();
-	        break;
-
-            case '2':
-                printf("\n Pressionou 2.");
-                getchar();
-    		break;
-
-            case '3':        
-                printf("\n Saindo...\n");
-    		break;
-
-            default: 
-                //opção inválida
-                printf("\n Op%c%co inv%clida!\n Pressione ENTER.", caracteres.cedilha, caracteres.atil, caracteres.aagudo);
-                //fseek(stdin, 0, SEEK_END);	 
-                //getchar();				
-			break;
-		}
-	}
-
+void opcao_invalida(){
+    printf("\n Op%c%co inv%clida!", CEDILHA, ATIL, AAGUDO);
+    fflush(stdin);
     getchar();
-    return 0;
 }
+
+void itinerarios_disponiveis(itinerario *itinerarios) {
+    itinerarios[0].codigo = '1';
+    strcpy(itinerarios[0].origem, "Campinas");
+    strcpy(itinerarios[0].destino, "Santos");
+    strcpy(itinerarios[0].data, "26/10/2015");
+    itinerarios[0].valor = 55.00;
+    
+    itinerarios[1].codigo = '2';
+    strcpy(itinerarios[1].origem, "Campinas");
+    strcpy(itinerarios[1].destino, "Jundiai");
+    strcpy(itinerarios[1].data, "26/10/2015");
+    itinerarios[1].valor = 45.00;
+    
+    itinerarios[2].codigo = '3';
+    strcpy(itinerarios[2].origem, "Campinas");
+    strcpy(itinerarios[2].destino, "São Paulo");
+    strcpy(itinerarios[2].data, "26/10/2015");
+    itinerarios[2].valor = 36.00;
+}
+
