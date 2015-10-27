@@ -11,7 +11,7 @@
 #define CONSULTAR_CAIXA 2
 #define SAIR            3
 
-#define QTDE_POLTRONAS 36
+#define QTDE_POLTRONAS 40
 
 #define RECUO_MARGEM_ESQUERDA   24
 #define VAZIO                   32
@@ -22,7 +22,7 @@
 #define ARESTA_INFERIOR_ESQUERDA    200
 #define ARESTA_INFERIOR_DIREITA     188
 #define FRONTAL                     186
-#define OFF_SET                     8
+#define OFF_SET                     (QTDE_POLTRONAS / 4 - 1)
 #define CORREDOR                    32 // try 32, 176
 #define JANELA                      254
 
