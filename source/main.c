@@ -11,6 +11,8 @@
 #define CONSULTAR_CAIXA 2
 #define SAIR            3
 
+#define QTDE_POLTRONAS 36
+
 //==============================================================================
 //    Estrutura de dados para armezenar caracteres ascii acentuados que serão 
 //    utilizados nas mensagens.
@@ -22,16 +24,21 @@ typedef struct {
     char otil;
 } caracteres_acentuados;
 
+typedef struct {
+    char    placa[7];
+    int     poltronas[QTDE_POLTRONAS];
+} onibus;
 
 //==============================================================================
 //    Estrutura de dados para armezenar dados de um itinerário.
 //==============================================================================
 typedef struct {
-    char codigo;
-    char origem[10];
-    char destino[10];
-    char data[10];
-    double valor;
+    char    codigo;
+    char    origem[10];
+    char    destino[10];
+    char    data[10];
+    double  valor;
+    onibus  onibus;
 } itinerario ;
 
 
@@ -149,7 +156,14 @@ void exibir_itinerarios(itinerario *i) {
 
     int n;
     for(n = 0; n < 3; n++) {
-        printf(" %c - %s x %s :%.2f\n", i[n].codigo, i[n].origem, i[n].destino, i[n].valor);
+        printf(" %c - %s x %s :%.2f Placa: %s\tQtde. Poltronas: %d\n",
+        i[n].codigo,
+        i[n].origem,
+        i[n].destino,
+        i[n].valor,
+        i[n].onibus.placa,
+        sizeof(i[n].onibus.poltronas)/sizeof(int)
+        );
     }
 
     printf(" 4 - Voltar ao menu anterior\n\n");
@@ -185,17 +199,20 @@ void itinerarios_disponiveis(itinerario *itinerarios) {
     strcpy(itinerarios[0].destino, "Santos");
     strcpy(itinerarios[0].data, "26/10/2015");
     itinerarios[0].valor = 55.00;
+    itinerarios[0].onibus = (onibus){ "AAB-1986" }  ;
     
     itinerarios[1].codigo = '2';
     strcpy(itinerarios[1].origem, "Campinas");
     strcpy(itinerarios[1].destino, "Jundiai");
     strcpy(itinerarios[1].data, "26/10/2015");
     itinerarios[1].valor = 45.00;
+    itinerarios[1].onibus = (onibus){ "JWS-1982" }  ;
     
     itinerarios[2].codigo = '3';
     strcpy(itinerarios[2].origem, "Campinas");
     strcpy(itinerarios[2].destino, "São Paulo");
     strcpy(itinerarios[2].data, "26/10/2015");
     itinerarios[2].valor = 36.00;
+    itinerarios[2].onibus = (onibus){ "AEJ-435" }  ;
 }
 
