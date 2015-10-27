@@ -7,10 +7,6 @@
 #define AAGUDO  160
 #define OTIL    228
 
-#define VENDER_PASSAGEM 1
-#define CONSULTAR_CAIXA 2
-#define SAIR            3
-
 #define QTDE_POLTRONAS 40
 
 #define RECUO_MARGEM_ESQUERDA   24
@@ -86,17 +82,17 @@ int main(int argc, char *argv[]) {
 		printf(" Escolha a op%c%co: ", CEDILHA, ATIL);
         scanf("%d", &opcao);
 
-        if (opcao == VENDER_PASSAGEM) {
+        if (opcao == 1) {
             vender_passagem(itinerarios);
-        } else if (opcao == CONSULTAR_CAIXA) {
+        } else if (opcao == 2) {
             consultar_caixa();
-        } else if (opcao == SAIR) {
+        } else if (opcao == 3) {
             limpar_console();
             printf("\n Saindo...\n");
         } else {
            opcao_invalida();
 		}
-	} while(opcao != SAIR);
+	} while(opcao != 3);
 
     getchar();
 
