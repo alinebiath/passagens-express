@@ -32,4 +32,5 @@
 *.dSYM/
 
 # Dev-Cpp files
-Makefile.win
+*.win
+*.layout
