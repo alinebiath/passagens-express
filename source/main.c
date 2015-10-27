@@ -13,6 +13,19 @@
 
 #define QTDE_POLTRONAS 36
 
+#define RECUO_MARGEM_ESQUERDA   24
+#define VAZIO                   32
+
+#define ARESTA_SUPERIOR_ESQUERDA    201
+#define ARESTA_SUPERIOR_DIREITA     187
+#define LATERAL                     205
+#define ARESTA_INFERIOR_ESQUERDA    200
+#define ARESTA_INFERIOR_DIREITA     188
+#define FRONTAL                     186
+#define OFF_SET                     8
+#define CORREDOR                    32 // try 32, 176
+#define JANELA                      254
+
 //==============================================================================
 //    Estrutura de dados para armezenar caracteres ascii acentuados que serão 
 //    utilizados nas mensagens.
@@ -53,6 +66,7 @@ void exibir_menu_principal();
 void limpar_buffer_entrada();
 void opcao_invalida();
 void itinerarios_disponiveis(itinerario itinerarios[3]);
+void exibir_poltronas(itinerario itinerario);
 
 //==============================================================================
 //    Função principal.
@@ -128,8 +142,9 @@ void vender_passagem(itinerario *i) {
         
         if(itinerario >= 1 && itinerario <= 3) {
             int indice = itinerario - 1;
-            printf("itinerario: %c", i[indice].codigo);
-            getchar();
+            exibir_poltronas(i[indice]);
+            //printf("itinerario: %c", i[indice].codigo);
+            //getchar();
             getchar();
         } else if(itinerario == 4) {
         } else {
@@ -156,14 +171,14 @@ void exibir_itinerarios(itinerario *i) {
 
     int n;
     for(n = 0; n < 3; n++) {
-        printf(" %c - %s x %s :%.2f Placa: %s\tQtde. Poltronas: %d\n",
-        i[n].codigo,
-        i[n].origem,
-        i[n].destino,
-        i[n].valor,
-        i[n].onibus.placa,
-        sizeof(i[n].onibus.poltronas)/sizeof(int)
+        
+        printf(
+            " %c - %s x %s\n",
+            i[n].codigo,
+            i[n].origem,
+            i[n].destino
         );
+        
     }
 
     printf(" 4 - Voltar ao menu anterior\n\n");
@@ -193,26 +208,144 @@ void opcao_invalida(){
     getchar();
 }
 
+void recuo_margem_esquerda(){
+    int i;
+    for(i = 0; i < RECUO_MARGEM_ESQUERDA; i++){
+        printf("%c", VAZIO);
+	}
+}
+
+void exibir_poltronas(itinerario itinerario) {
+    limpar_console();
+    
+    // TODO: tranferir este trecho para uma function - início
+    // lateral direita do ônibus - início
+    recuo_margem_esquerda();
+    printf("%c", ARESTA_SUPERIOR_ESQUERDA);
+
+    int i;
+    for(i = 0; i < QTDE_POLTRONAS - OFF_SET; i++){
+        if(i % 3 == 0) {
+          printf("%c", JANELA);  
+        } else {
+            printf("%c", LATERAL);
+        }
+	}
+
+    printf("%c", ARESTA_SUPERIOR_DIREITA);
+    printf("\n");
+    // lateral direita do ônibus - fim
+    // TODO: tranferir este trecho para uma function - fim
+    
+    // poltronas ímpares janela da direita - início
+    recuo_margem_esquerda();
+    printf("%c ", FRONTAL);
+
+    for(i = 2; i < QTDE_POLTRONAS; (i+=4)){
+		printf("%02d ", itinerario.onibus.poltronas[i]);
+	}
+
+    printf("%c\n", FRONTAL);
+    // poltronas ímpares janela da direita - fim
+
+    // poltronas pares corredor, lado direito - início
+    recuo_margem_esquerda();
+    printf("%c ", FRONTAL);
+
+    for(i = 3; i < QTDE_POLTRONAS; (i+=4)){
+		printf("%02d ", itinerario.onibus.poltronas[i]);
+	}
+
+    printf("%c\n", FRONTAL);
+    // poltronas pares corredor, lado direito - fim
+
+    // corredor - início
+    recuo_margem_esquerda();
+    printf("%c%c", FRONTAL, CORREDOR);
+
+    for(i = 3; i < QTDE_POLTRONAS; (i+=4)){
+		printf("%c%c%c", CORREDOR, CORREDOR, CORREDOR);
+	}
+
+    printf("%c\n", FRONTAL);
+    // corredor - fim
+
+    // poltronas pares corredor, lado esquero - início
+    recuo_margem_esquerda();
+    printf("%c ", FRONTAL);
+
+    for(i = 1; i < QTDE_POLTRONAS; (i+=4)){
+		printf("%02d ", itinerario.onibus.poltronas[i]);
+	}
+
+    printf("%c\n", FRONTAL);
+    // poltronas pares corredor, lado esquerdo - fim
+
+    // poltronas ímpares janela da esquerda - início
+    recuo_margem_esquerda();
+    printf("%c ", FRONTAL);
+
+    for(i = 0; i < QTDE_POLTRONAS; (i+=4)){
+		printf("%02d ", itinerario.onibus.poltronas[i]);
+	}
+
+    printf("%c\n", FRONTAL);
+    // poltronas ímpares janela da esquerda - fim
+
+    // lateral direita do ônibus - início
+    recuo_margem_esquerda();
+    printf("%c", ARESTA_INFERIOR_ESQUERDA);
+
+    for(i = 0; i < QTDE_POLTRONAS - OFF_SET; i++){
+		if(i % 3 == 0) {
+            printf("%c", JANELA);  
+        } else {
+            printf("%c", LATERAL);
+        }
+	}
+
+    printf("%c", ARESTA_INFERIOR_DIREITA);
+    printf("\n");
+    // lateral direita do ônibus - fim
+    
+    /*int i;
+    for(i = 0; i < QTDE_POLTRONAS; i++){
+		printf("%02d ", itinerario.onibus.poltronas[i]);
+	}*/
+	getchar();
+}
+
 void itinerarios_disponiveis(itinerario *itinerarios) {
+    
     itinerarios[0].codigo = '1';
     strcpy(itinerarios[0].origem, "Campinas");
     strcpy(itinerarios[0].destino, "Santos");
     strcpy(itinerarios[0].data, "26/10/2015");
     itinerarios[0].valor = 55.00;
-    itinerarios[0].onibus = (onibus){ "AAB-1986" }  ;
+    strcpy(itinerarios[0].onibus.placa, "AAB-1986");
+    int i = 0;
+    for(i = 0; i < QTDE_POLTRONAS; i++) {
+        itinerarios[0].onibus.poltronas[i] = i+1;
+    }
     
     itinerarios[1].codigo = '2';
     strcpy(itinerarios[1].origem, "Campinas");
     strcpy(itinerarios[1].destino, "Jundiai");
     strcpy(itinerarios[1].data, "26/10/2015");
     itinerarios[1].valor = 45.00;
-    itinerarios[1].onibus = (onibus){ "JWS-1982" }  ;
+    strcpy(itinerarios[1].onibus.placa,"JWS-1982");
+    for(i = 0; i < QTDE_POLTRONAS; i++) {
+        itinerarios[1].onibus.poltronas[i] = i+1;
+    }
     
     itinerarios[2].codigo = '3';
     strcpy(itinerarios[2].origem, "Campinas");
     strcpy(itinerarios[2].destino, "São Paulo");
     strcpy(itinerarios[2].data, "26/10/2015");
     itinerarios[2].valor = 36.00;
-    itinerarios[2].onibus = (onibus){ "AEJ-435" }  ;
+    strcpy(itinerarios[2].onibus.placa, "AEJ-435");
+    for(i = 0; i < QTDE_POLTRONAS; i++) {
+        itinerarios[2].onibus.poltronas[i] = i+1;
+    }
 }
 
