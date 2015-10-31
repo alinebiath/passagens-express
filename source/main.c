@@ -18,9 +18,13 @@
 #define ARESTA_INFERIOR_ESQUERDA    200
 #define ARESTA_INFERIOR_DIREITA     188
 #define FRONTAL                     186
-#define OFF_SET                     (QTDE_POLTRONAS / 4 - 1)
+#define COMPENSACAO                 (QTDE_POLTRONAS / 4 - 1)
 #define CORREDOR                    32 // try 32, 176
 #define JANELA                      254
+
+#define COMUM       1
+#define ESTUDANTE   2
+#define IDOSO       3
 
 //==============================================================================
 //    Estrutura de dados para armezenar caracteres ascii acentuados que serão 
@@ -34,9 +38,10 @@ typedef struct {
 } caracteres_acentuados;
 
 typedef struct {
-    char    placa[7];
-    int     poltronas[QTDE_POLTRONAS];
-} onibus;
+    int tipo;   
+    int numero_poltrona;
+    int valor_pago;
+} bilhete;
 
 //==============================================================================
 //    Estrutura de dados para armezenar dados de um itinerário.
@@ -47,12 +52,12 @@ typedef struct {
     char    destino[10];
     char    data[10];
     double  valor;
-    onibus  onibus;
+    bilhete bilhetes[QTDE_POLTRONAS];
 } itinerario ;
 
 
 //==============================================================================
-//    Declaração de funções.
+//    Declaração de funções auxiliares.
 //==============================================================================
 void limpar_console();
 void vender_passagem(itinerario *i);
@@ -63,17 +68,24 @@ void limpar_buffer_entrada();
 void opcao_invalida();
 void itinerarios_disponiveis(itinerario itinerarios[3]);
 void exibir_poltronas(itinerario itinerario);
+itinerario criar_itinerario(int codigo, char origem[10], char destino[10], char data_partida[10], float valor);
+void exibir_poltrona(bilhete bilhete);
+void exibir_legenda_acentos();
 
 //==============================================================================
 //    Função principal.
 //==============================================================================
 int main(int argc, char *argv[]) {
 
+    //argc      = Quantidade de argumentos passados via linha de comando.
+    //argv[0]   = Nome do programa (caminho absoluto)
+    //argv[1]   = Primeiro argumento passado via linha de comando
+    //arg[n]    = N argumento passado via linha de comando, sendo N diferente de zero
+    
     int opcao;
     
     itinerario itinerarios[3];
     itinerarios_disponiveis(itinerarios);
-    
     
 	/* executa até o usuário escolher SAIR */
     do {
@@ -88,7 +100,7 @@ int main(int argc, char *argv[]) {
             consultar_caixa();
         } else if (opcao == 3) {
             limpar_console();
-            printf("\n Saindo...\n");
+            //printf("\n Saindo...\n");
         } else {
            opcao_invalida();
 		}
@@ -139,8 +151,6 @@ void vender_passagem(itinerario *i) {
         if(itinerario >= 1 && itinerario <= 3) {
             int indice = itinerario - 1;
             exibir_poltronas(i[indice]);
-            //printf("itinerario: %c", i[indice].codigo);
-            //getchar();
             getchar();
         } else if(itinerario == 4) {
         } else {
@@ -156,10 +166,32 @@ void consultar_caixa() {
 	fflush(stdin);
 	getchar();
 }
+
+itinerario criar_itinerario(int codigo, char origem[10], char destino[10], char data_partida[10], float valor) {
+    itinerario novo_itinerario;
+    
+    novo_itinerario.codigo = codigo;
+    strcpy(novo_itinerario.origem, origem);
+    strcpy(novo_itinerario.destino, destino);
+    strcpy(novo_itinerario.data, data_partida);
+    novo_itinerario.valor = valor;
+    
+    int indice;
+    
+    for(indice = 0; indice < QTDE_POLTRONAS; indice++) {
+        int numero_poltrona = indice + 1;
+        novo_itinerario.bilhetes[indice].numero_poltrona = numero_poltrona;
+        novo_itinerario.bilhetes[indice].tipo = 0;
+        novo_itinerario.bilhetes[indice].valor_pago = 0;
+    }
+    
+    return novo_itinerario;
+}
+
 /*
     Função para apresentar os itinerários
 */
-void exibir_itinerarios(itinerario *i) {
+void exibir_itinerarios(itinerario *itinerarios) {
     limpar_console();
     
     printf("\n");
@@ -167,17 +199,10 @@ void exibir_itinerarios(itinerario *i) {
 
     int n;
     for(n = 0; n < 3; n++) {
-        
-        printf(
-            " %c - %s x %s\n",
-            i[n].codigo,
-            i[n].origem,
-            i[n].destino
-        );
-        
+        printf(" %d - %s x %s\n", itinerarios[n].codigo, itinerarios[n].origem, itinerarios[n].destino);
     }
 
-    printf(" 4 - Voltar ao menu anterior\n\n");
+    printf(" 4 - Voltar ao menu anterior\n\n"); // deveria ser um número que não coincida com o código do itinerário
 }
 
 /*
@@ -212,6 +237,7 @@ void recuo_margem_esquerda(){
 }
 
 void exibir_poltronas(itinerario itinerario) {
+    bilhete bilhete;
     limpar_console();
     
     // TODO: tranferir este trecho para uma function - início
@@ -220,7 +246,7 @@ void exibir_poltronas(itinerario itinerario) {
     printf("%c", ARESTA_SUPERIOR_ESQUERDA);
 
     int i;
-    for(i = 0; i < QTDE_POLTRONAS - OFF_SET; i++){
+    for(i = 0; i < QTDE_POLTRONAS - COMPENSACAO; i++){
         if(i % 3 == 0) {
           printf("%c", JANELA);  
         } else {
@@ -237,8 +263,15 @@ void exibir_poltronas(itinerario itinerario) {
     recuo_margem_esquerda();
     printf("%c ", FRONTAL);
 
-    for(i = 2; i < QTDE_POLTRONAS; (i+=4)){
-		printf("%02d ", itinerario.onibus.poltronas[i]);
+    for(i = 2; i < QTDE_POLTRONAS; (i+=4)) {
+        bilhete = itinerario.bilhetes[i];
+        if(bilhete.valor_pago == 0) {
+            printf("%02d ", bilhete.numero_poltrona);
+        } else {
+            printf("%c%c%d", VAZIO, VAZIO, bilhete.tipo);
+            // vendida
+        }
+		
 	}
 
     printf("%c\n", FRONTAL);
@@ -249,7 +282,13 @@ void exibir_poltronas(itinerario itinerario) {
     printf("%c ", FRONTAL);
 
     for(i = 3; i < QTDE_POLTRONAS; (i+=4)){
-		printf("%02d ", itinerario.onibus.poltronas[i]);
+        bilhete = itinerario.bilhetes[i];
+		if(bilhete.valor_pago == 0) {
+            printf("%02d ", bilhete.numero_poltrona);
+        } else {
+            printf("%c%c%d", VAZIO, VAZIO, bilhete.tipo);
+            // vendida
+        }
 	}
 
     printf("%c\n", FRONTAL);
@@ -271,7 +310,8 @@ void exibir_poltronas(itinerario itinerario) {
     printf("%c ", FRONTAL);
 
     for(i = 1; i < QTDE_POLTRONAS; (i+=4)){
-		printf("%02d ", itinerario.onibus.poltronas[i]);
+		bilhete = itinerario.bilhetes[i];
+		exibir_poltrona(bilhete);
 	}
 
     printf("%c\n", FRONTAL);
@@ -282,7 +322,9 @@ void exibir_poltronas(itinerario itinerario) {
     printf("%c ", FRONTAL);
 
     for(i = 0; i < QTDE_POLTRONAS; (i+=4)){
-		printf("%02d ", itinerario.onibus.poltronas[i]);
+		bilhete = itinerario.bilhetes[i];
+		bilhete.valor_pago = 1; bilhete.tipo = 3;
+		exibir_poltrona(bilhete);
 	}
 
     printf("%c\n", FRONTAL);
@@ -292,7 +334,7 @@ void exibir_poltronas(itinerario itinerario) {
     recuo_margem_esquerda();
     printf("%c", ARESTA_INFERIOR_ESQUERDA);
 
-    for(i = 0; i < QTDE_POLTRONAS - OFF_SET; i++){
+    for(i = 0; i < QTDE_POLTRONAS - COMPENSACAO; i++){
 		if(i % 3 == 0) {
             printf("%c", JANELA);  
         } else {
@@ -304,44 +346,61 @@ void exibir_poltronas(itinerario itinerario) {
     printf("\n");
     // lateral direita do ônibus - fim
     
-    /*int i;
-    for(i = 0; i < QTDE_POLTRONAS; i++){
-		printf("%02d ", itinerario.onibus.poltronas[i]);
-	}*/
+    exibir_legenda_acentos();
+    
+    printf("\n");
+    recuo_margem_esquerda();
+    printf("%s x %s", itinerario.origem, itinerario.destino);
+    printf("\n");
+    recuo_margem_esquerda();
+    printf("Data: %s", itinerario.data);
+    printf("\n");
+    recuo_margem_esquerda();
+    printf("Valor: %.2f", itinerario.valor);
 	getchar();
 }
 
+void exibir_legenda_acentos(){
+    printf("\n");
+    recuo_margem_esquerda();
+    printf("Verde: acentos livres.");
+    printf("\n");
+    recuo_margem_esquerda();
+    printf("Vermelho: acentos ocupados.");
+    printf("\n");
+}
+
 void itinerarios_disponiveis(itinerario *itinerarios) {
+  
+    itinerarios[0] = criar_itinerario(1, "Campinas", "Santos", "26/10/2015", 55.00);
+    itinerarios[1] = criar_itinerario(2, "Campinas", "Jundiai", "26/10/2015", 45.00);
+    itinerarios[2] = criar_itinerario(3, "Campinas", "Sao Paulo", "26/10/2015", 36.00);
     
-    itinerarios[0].codigo = '1';
-    strcpy(itinerarios[0].origem, "Campinas");
-    strcpy(itinerarios[0].destino, "Santos");
-    strcpy(itinerarios[0].data, "26/10/2015");
-    itinerarios[0].valor = 55.00;
-    strcpy(itinerarios[0].onibus.placa, "AAB-1986");
-    int i = 0;
-    for(i = 0; i < QTDE_POLTRONAS; i++) {
-        itinerarios[0].onibus.poltronas[i] = i+1;
-    }
+}
+
+void exibir_poltrona(bilhete bilhete) {
+    HANDLE h = GetStdHandle (STD_OUTPUT_HANDLE);
+    WORD wOldColorAttrs;
+    CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
     
-    itinerarios[1].codigo = '2';
-    strcpy(itinerarios[1].origem, "Campinas");
-    strcpy(itinerarios[1].destino, "Jundiai");
-    strcpy(itinerarios[1].data, "26/10/2015");
-    itinerarios[1].valor = 45.00;
-    strcpy(itinerarios[1].onibus.placa,"JWS-1982");
-    for(i = 0; i < QTDE_POLTRONAS; i++) {
-        itinerarios[1].onibus.poltronas[i] = i+1;
-    }
+    /* Primeiro, salvamos a atual configuração de cores do console */
+    GetConsoleScreenBufferInfo(h, &csbiInfo);
+    wOldColorAttrs = csbiInfo.wAttributes;
     
-    itinerarios[2].codigo = '3';
-    strcpy(itinerarios[2].origem, "Campinas");
-    strcpy(itinerarios[2].destino, "São Paulo");
-    strcpy(itinerarios[2].data, "26/10/2015");
-    itinerarios[2].valor = 36.00;
-    strcpy(itinerarios[2].onibus.placa, "AEJ-435");
-    for(i = 0; i < QTDE_POLTRONAS; i++) {
-        itinerarios[2].onibus.poltronas[i] = i+1;
+    if(bilhete.valor_pago == 0) {
+        /* Definimos as novas informações de cores do console */
+        /* FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY	*/
+        SetConsoleTextAttribute (h, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+        printf("%02d ", bilhete.numero_poltrona);
+    } else {
+        /* Definimos as novas informações de cores do console */
+        /* FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY	*/
+        SetConsoleTextAttribute (h, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        printf("%02d ", bilhete.numero_poltrona);
     }
+
+    /* Restaurando as cores originais */
+    SetConsoleTextAttribute (h, wOldColorAttrs);
+
 }
 
