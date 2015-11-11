@@ -75,6 +75,7 @@ void opcao_invalida();
 void exibir_poltronas(Itinerario itinerario);
 void exibir_poltrona(Bilhete bilhete, int *poltronas_disponiveis);
 void exibir_legenda_poltronas();
+void apresentar_detalhes_itinerario(Itinerario itinerario);
 int calcular_poltronas_livres(Bilhete *vetor_bilhetes);
 Itinerario* obter_itinerarios_disponiveis();
 Itinerario criar_itinerario(int codigo_itinerario, 
@@ -162,8 +163,13 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
         scanf("%d", &codigo_itinerario);
         
         if (codigo_itinerario >= 1 && codigo_itinerario <= 3) {
-            int indice = codigo_itinerario - 1;
-            exibir_poltronas(vetor_itinerarios[indice]);
+			int indice = codigo_itinerario - 1;			
+			
+			Itinerario itinerario = vetor_itinerarios[indice];
+			
+			apresentar_detalhes_itinerario(itinerario);
+
+            exibir_poltronas(itinerario);
             getchar();
         } else if (codigo_itinerario == SAIR) {
 			
@@ -171,6 +177,30 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
             opcao_invalida();				
         }
 	} while (codigo_itinerario != SAIR);
+}
+
+void separador_linha() {
+	int indice = 0;
+	int tamanho_margem = 80 - 2;
+	
+	printf(" ");
+	for (indice = 0; indice < tamanho_margem; indice++) {
+		printf("=");
+	}
+	printf("\n");
+}
+
+void apresentar_detalhes_itinerario(Itinerario itinerario) {
+	printf("\n");
+	separador_linha();
+	printf(" Dados do Itiner%crio\n\n", AAGUDO, itinerario.codigo);
+	printf(" Origem:\t%s\n", itinerario.origem);
+	printf(" Destino:\t%s\n", itinerario.destino);
+	printf(" Data:\t\t%s\n", itinerario.data);	
+	printf(" Valor:\t\t%.2f\n", itinerario.valor);
+	separador_linha();
+	getchar();
+	getchar();
 }
 
 void consultar_caixa() {
