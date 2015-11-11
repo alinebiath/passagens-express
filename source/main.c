@@ -88,6 +88,8 @@ void desenhar_fileira_poltronas(Itinerario itinerario,
 								int primeira_poltrona, 
 								int *total_poltronas_disponiveis);
 void desenhar_corredor();
+void processar_venda();
+int escolher_tipo_bilhete();
 int confirmar_itinerario_selecionado(Itinerario itinerario);
 int calcular_poltronas_livres(Bilhete *vetor_bilhetes);
 Itinerario* obter_itinerarios_disponiveis();
@@ -410,9 +412,102 @@ void exibir_poltronas(Itinerario itinerario) {
     	printf("\n\n N%co h%c mais poltronas livres!", ATIL, AAGUDO);
 	} else {
 		printf("\n\n Total de poltronas livres: %d", total_poltronas_disponiveis);
+		processar_venda();
 	}
     
 	getchar();
+}
+
+void processar_venda() {
+    int tipo_bilhete = escolher_tipo_bilhete();
+    
+}
+
+int escolher_poltrona(Bilhete *vetor_bilhetes, int tipo_bilhete) {
+	int poltrona_escolhida = -1;
+	
+	do {
+    	//limpar_console();
+		printf("\n\n");
+		separador_linha();
+		printf(" Informe o no. da poltrona desejada\n");
+    	printf(" %d - Voltar\n\n", 0);
+
+        scanf("%d", &poltrona_escolhida);
+        
+        if (poltrona_escolhida == 0) {
+        	// just return zero
+		} else {
+			if (tipo_bilhete == IDOSO) {
+				int i, poltronas_idoso_ocupadas = 0;
+				
+				
+				for (i = 0; i < QTDE_POLTRONAS; i++) {
+					Bilhete bilhete = vetor_bilhetes[i];
+					if (bilhete.tipo == IDOSO) {
+						
+					
+					}
+				}		
+			}
+			
+		}
+        
+        switch (tipo_bilhete) {
+        	case IDOSO:
+        		//aplicar desconto de 100%
+        		break;
+        	case ESTUDANTE:
+        		//aplicar desconto de 50%
+        		break;
+        	case COMUM:
+        		break;
+        	case SAIR:
+	       		break;
+        	default:
+        		opcao_invalida();
+		}
+	} while (tipo_bilhete != SAIR && tipo_bilhete != COMUM && 
+			tipo_bilhete != ESTUDANTE && tipo_bilhete != IDOSO);
+	
+}
+void aplicar_desconto() {
+	
+}
+
+int escolher_tipo_bilhete() {
+	int tipo_bilhete = -1;
+    
+    do {
+    	//limpar_console();
+		printf("\n\n");
+		separador_linha();
+		printf(" Informe o tipo da passagem\n");
+		printf(" %d - COMUM\n", COMUM);
+    	printf(" %d - ESTUDANTE\n", ESTUDANTE);
+    	printf(" %d - IDOSO\n", IDOSO);
+    	printf(" %d - Voltar\n\n", 0);
+		
+		printf(" Tipo bilhete: ");
+
+        scanf("%d", &tipo_bilhete);
+        
+        switch (tipo_bilhete) {
+        	case IDOSO:
+        		//aplicar desconto de 100%
+        		break;
+        	case ESTUDANTE:
+        		//aplicar desconto de 50%
+        		break;
+        	case COMUM:
+        		break;
+        	case SAIR:
+	       		break;
+        	default:
+        		opcao_invalida();
+		}
+	} while (tipo_bilhete != SAIR && tipo_bilhete != COMUM && 
+			tipo_bilhete != ESTUDANTE && tipo_bilhete != IDOSO);
 }
 
 void exibir_legenda_poltronas() {
