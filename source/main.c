@@ -355,7 +355,7 @@ void desenhar_fileira_poltronas(Itinerario itinerario, int primeira_poltrona, in
 	
     for (i = primeira_poltrona; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
         bilhete = itinerario.bilhetes[i];
-        exibir_poltrona(bilhete, &total_poltronas_disponiveis);
+        exibir_poltrona(bilhete, total_poltronas_disponiveis);
 	}
 
     printf("%c\n", FRONTAL);
@@ -378,11 +378,11 @@ void desenhar_corredor() {
 void desenhar_onibus(Itinerario itinerario, int *total_poltronas_disponiveis) {
 	// disposição dos assentos seguindo o modelo de empresa Cometa
 	desenhar_lateral_onibus();
-    desenhar_fileira_poltronas(itinerario, POLTRONA_03, &total_poltronas_disponiveis);
-    desenhar_fileira_poltronas(itinerario, POLTRONA_04, &total_poltronas_disponiveis);
+    desenhar_fileira_poltronas(itinerario, POLTRONA_03, total_poltronas_disponiveis);
+    desenhar_fileira_poltronas(itinerario, POLTRONA_04, total_poltronas_disponiveis);
     desenhar_corredor();
-	desenhar_fileira_poltronas(itinerario, POLTRONA_02, &total_poltronas_disponiveis);
-	desenhar_fileira_poltronas(itinerario, POLTRONA_01, &total_poltronas_disponiveis);
+	desenhar_fileira_poltronas(itinerario, POLTRONA_02, total_poltronas_disponiveis);
+	desenhar_fileira_poltronas(itinerario, POLTRONA_01, total_poltronas_disponiveis);
 	desenhar_lateral_onibus();
 }
 
@@ -406,7 +406,12 @@ void exibir_poltronas(Itinerario itinerario) {
     recuo_margem_esquerda();
     printf("Valor: %.2f", itinerario.valor);
     
-    printf("\n\n Poltronas livres: %d", total_poltronas_disponiveis);
+    if (total_poltronas_disponiveis == 0) {
+    	printf("\n\n N%co h%c mais poltronas livres!", ATIL, AAGUDO);
+	} else {
+		printf("\n\n Total de poltronas livres: %d", total_poltronas_disponiveis);
+	}
+    
 	getchar();
 }
 
