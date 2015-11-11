@@ -29,6 +29,10 @@
 
 #define SALTO_POLTRONA      4
 
+#define SAIR				0
+#define VENDER_PASSAGEM		1
+#define CONSULTAR_CAIXA		2
+
 typedef struct Bilhete Bilhete;
 typedef struct Itinerario Itinerario;
 
@@ -88,7 +92,7 @@ int main(int argc, char *argv[]) {
     //argv[1]   = Primeiro argumento passado via linha de comando
     //arg[n]    = N argumento passado via linha de comando, sendo N diferente de zero
     
-    int opcao;
+    int opcao = -1;
     
     Itinerario *vetor_itinerarios = obter_itinerarios_disponiveis();
     
@@ -99,17 +103,17 @@ int main(int argc, char *argv[]) {
 		printf(" Escolha a op%c%co: ", CEDILHA, ATIL);
         scanf("%d", &opcao);
 
-        if (opcao == 1) {
+        if (opcao == VENDER_PASSAGEM) {
             vender_passagem(vetor_itinerarios);
-        } else if (opcao == 2) {
+        } else if (opcao == CONSULTAR_CAIXA) {
             consultar_caixa();
-        } else if (opcao == 3) {
+        } else if (opcao == SAIR) {
             limpar_console();
             //printf("\n Saindo...\n");
         } else {
            opcao_invalida();
 		}
-	} while (opcao != 3);
+	} while (opcao != SAIR);
 
     getchar();
 
@@ -233,9 +237,9 @@ void exibir_menu_principal() {
 
 	printf("\n");
 	printf(" Menu de Op%c%ces\n\n", CEDILHA, OTIL);
-    printf(" 1 - Vender Passagem\n");
-    printf(" 2 - Consultar Caixa\n");
-    printf(" 3 - Sair\n\n");
+    printf(" %d - Vender Passagem\n", VENDER_PASSAGEM);
+    printf(" %d - Consultar Caixa\n", CONSULTAR_CAIXA);
+    printf(" %d - Sair\n\n", SAIR);
 }
 
 void limpar_buffer_entrada() {
