@@ -35,6 +35,9 @@
 
 #define QTDE_ITINERARIOS	2
 
+#define SIM					1
+#define NAO					2
+
 typedef struct Bilhete Bilhete;
 typedef struct Itinerario Itinerario;
 
@@ -75,7 +78,7 @@ void opcao_invalida();
 void exibir_poltronas(Itinerario itinerario);
 void exibir_poltrona(Bilhete bilhete, int *poltronas_disponiveis);
 void exibir_legenda_poltronas();
-void apresentar_detalhes_itinerario(Itinerario itinerario);
+int confirmar_itinerario_selecionado(Itinerario itinerario);
 int calcular_poltronas_livres(Bilhete *vetor_bilhetes);
 Itinerario* obter_itinerarios_disponiveis();
 Itinerario criar_itinerario(int codigo_itinerario, 
@@ -167,10 +170,11 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
 			
 			Itinerario itinerario = vetor_itinerarios[indice];
 			
-			apresentar_detalhes_itinerario(itinerario);
-
-            exibir_poltronas(itinerario);
-            getchar();
+			int confirmacao = confirmar_itinerario_selecionado(itinerario);
+			
+			if (confirmacao == SIM) {
+				exibir_poltronas(itinerario);
+			}
         } else if (codigo_itinerario == SAIR) {
 			
         } else {
@@ -190,17 +194,38 @@ void separador_linha() {
 	printf("\n");
 }
 
-void apresentar_detalhes_itinerario(Itinerario itinerario) {
-	printf("\n");
-	separador_linha();
-	printf(" Dados do Itiner%crio\n\n", AAGUDO, itinerario.codigo);
-	printf(" Origem:\t%s\n", itinerario.origem);
-	printf(" Destino:\t%s\n", itinerario.destino);
-	printf(" Data:\t\t%s\n", itinerario.data);	
-	printf(" Valor:\t\t%.2f\n", itinerario.valor);
-	separador_linha();
-	getchar();
-	getchar();
+int confirmar_itinerario_selecionado(Itinerario itinerario) {
+	int confirmacao = -1;
+    
+    do {
+    	limpar_console();
+		separador_linha();
+		printf(" Dados do Itiner%crio\n\n", AAGUDO, itinerario.codigo);
+		printf(" Origem:\t%s\n", itinerario.origem);
+		printf(" Destino:\t%s\n", itinerario.destino);
+		printf(" Data:\t\t%s\n", itinerario.data);	
+		printf(" Valor:\t\t%.2f\n", itinerario.valor);
+		separador_linha();
+	
+	
+		printf(" Confirma a escolha do itiner%crio?\n", AAGUDO);
+	    printf(" %d - Sim\n", SIM);
+		printf(" %d - N%co\n", NAO, ATIL);
+		printf(" ");
+
+        scanf("%d", &confirmacao);
+        
+        switch (confirmacao) {
+        	case SIM:
+        	case NAO:
+        		break;
+        	default:
+        		opcao_invalida();
+		}
+	} while (confirmacao < SIM || confirmacao > NAO);
+
+	getchar();	
+	return confirmacao;
 }
 
 void consultar_caixa() {
