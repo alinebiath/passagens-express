@@ -33,6 +33,8 @@
 #define VENDER_PASSAGEM		1
 #define CONSULTAR_CAIXA		2
 
+#define QTDE_ITINERARIOS	2
+
 typedef struct Bilhete Bilhete;
 typedef struct Itinerario Itinerario;
 
@@ -150,7 +152,7 @@ void limpar_console(){
 
 void vender_passagem(Itinerario *vetor_itinerarios) {
 
-    int codigo_itinerario;
+    int codigo_itinerario = -1;
     
     /* executa até o usuário escolher voltar */
     do {
@@ -163,11 +165,12 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
             int indice = codigo_itinerario - 1;
             exibir_poltronas(vetor_itinerarios[indice]);
             getchar();
-        } else if(codigo_itinerario == 4) {
+        } else if (codigo_itinerario == SAIR) {
+			
         } else {
             opcao_invalida();				
         }
-	} while(codigo_itinerario != 4);
+	} while (codigo_itinerario != SAIR);
 }
 
 void consultar_caixa() {
@@ -218,15 +221,15 @@ void exibir_itinerarios(Itinerario *itinerarios) {
     printf("\n");
 	printf(" Itiner%crios\n\n", AAGUDO);
 
-    int n;
-    for(n = 0; n < 3; n++) {
+    int index;
+    for(index = 0; index < QTDE_ITINERARIOS; index++) {
         printf(" %d - %s x %s\n", 
-                itinerarios[n].codigo,
-                itinerarios[n].origem, 
-                itinerarios[n].destino);
+                itinerarios[index].codigo,
+                itinerarios[index].origem, 
+                itinerarios[index].destino);
     }
 
-    printf(" 4 - Voltar ao menu anterior\n\n"); // deveria ser um número que não coincida com o código do itinerário
+    printf(" %d - Voltar ao menu anterior\n\n", SAIR); // deveria ser um número que não coincida com o código do itinerário
 }
 
 /*
@@ -389,15 +392,13 @@ void exibir_legenda_poltronas() {
 }
 
 /*
-    Retorna um vetor com 3 elementos do tipo <itinerario>
+    Retorna um vetor com QTDE_ITINERARIOS elementos do tipo <itinerario>
 */
 Itinerario * obter_itinerarios_disponiveis() {
-    int numero_de_elementos = 3;
     
-    Itinerario *vetor_itinerarios = malloc(numero_de_elementos * sizeof(Itinerario));
+    Itinerario *vetor_itinerarios = malloc(QTDE_ITINERARIOS * sizeof(Itinerario));
     vetor_itinerarios[0] = criar_itinerario(1, 100, "Campinas", "Santos", "26/10/2015", 55.00);
-    vetor_itinerarios[1] = criar_itinerario(2, 200, "Campinas", "Jundiai", "26/10/2015", 45.00);
-    vetor_itinerarios[2] = criar_itinerario(3, 300, "Campinas", "Sao Paulo", "26/10/2015", 36.00);
+    vetor_itinerarios[1] = criar_itinerario(2, 200, "Campinas", "Cerquilho", "26/10/2015", 45.00);
 
     return vetor_itinerarios;
 }
