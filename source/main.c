@@ -38,6 +38,11 @@
 #define SIM					1
 #define NAO					2
 
+#define POLTRONA_01			0
+#define POLTRONA_02			1
+#define POLTRONA_03			2
+#define POLTRONA_04			3
+
 typedef struct Bilhete Bilhete;
 typedef struct Itinerario Itinerario;
 
@@ -78,6 +83,11 @@ void opcao_invalida();
 void exibir_poltronas(Itinerario itinerario);
 void exibir_poltrona(Bilhete bilhete, int *poltronas_disponiveis);
 void exibir_legenda_poltronas();
+void desenhar_lateral_onibus();
+void desenhar_fileira_poltronas(Itinerario itinerario, 
+								int primeira_poltrona, 
+								int *total_poltronas_disponiveis);
+void desenhar_corredor();
 int confirmar_itinerario_selecionado(Itinerario itinerario);
 int calcular_poltronas_livres(Bilhete *vetor_bilhetes);
 Itinerario* obter_itinerarios_disponiveis();
@@ -318,18 +328,13 @@ void recuo_margem_esquerda() {
 	}
 }
 
-void exibir_poltronas(Itinerario itinerario) {
-    int total_poltronas_disponiveis = 0;
-    Bilhete bilhete;
-    limpar_console();
-    
-    // TODO: tranferir este trecho para uma function - início
-    // lateral direita do ônibus - início
+void desenhar_lateral_onibus() {
     recuo_margem_esquerda();
     printf("%c", ARESTA_SUPERIOR_ESQUERDA);
 
     int i;
     for (i = 0; i < QTDE_POLTRONAS - COMPENSACAO; i++) {
+    	// lógica para imprimir o caracter que representa a janela ou não
         if (i % 3 == 0) {
           printf("%c", JANELA);  
         } else {
@@ -339,34 +344,26 @@ void exibir_poltronas(Itinerario itinerario) {
 
     printf("%c", ARESTA_SUPERIOR_DIREITA);
     printf("\n");
-    // lateral direita do ônibus - fim
-    // TODO: tranferir este trecho para uma function - fim
-    
-    // poltronas ímpares janela da direita - início
+}
+
+void desenhar_fileira_poltronas(Itinerario itinerario, int primeira_poltrona, int *total_poltronas_disponiveis) {
     recuo_margem_esquerda();
     printf("%c ", FRONTAL);
 
-    for (i = 2; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
+	int i;
+	Bilhete bilhete;
+	
+    for (i = primeira_poltrona; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
         bilhete = itinerario.bilhetes[i];
         exibir_poltrona(bilhete, &total_poltronas_disponiveis);
 	}
 
     printf("%c\n", FRONTAL);
-    // poltronas ímpares janela da direita - fim
+}
 
-    // poltronas pares corredor, lado direito - início
-    recuo_margem_esquerda();
-    printf("%c ", FRONTAL);
+void desenhar_corredor() {
+	int i;
 
-    for (i = 3; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
-        bilhete = itinerario.bilhetes[i];
-		exibir_poltrona(bilhete, &total_poltronas_disponiveis);
-	}
-
-    printf("%c\n", FRONTAL);
-    // poltronas pares corredor, lado direito - fim
-
-    // corredor - início
     recuo_margem_esquerda();
     printf("%c%c", FRONTAL, CORREDOR);
 
@@ -375,50 +372,27 @@ void exibir_poltronas(Itinerario itinerario) {
 	}
 
     printf("%c\n", FRONTAL);
-    // corredor - fim
+}
 
-    // poltronas pares corredor, lado esquero - início
-    recuo_margem_esquerda();
-    printf("%c ", FRONTAL);
 
-    for (i = 1; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
-		bilhete = itinerario.bilhetes[i];
-		exibir_poltrona(bilhete, &total_poltronas_disponiveis);
-	}
+void desenhar_onibus(Itinerario itinerario, int *total_poltronas_disponiveis) {
+	// disposição dos assentos seguindo o modelo de empresa Cometa
+	desenhar_lateral_onibus();
+    desenhar_fileira_poltronas(itinerario, POLTRONA_03, &total_poltronas_disponiveis);
+    desenhar_fileira_poltronas(itinerario, POLTRONA_04, &total_poltronas_disponiveis);
+    desenhar_corredor();
+	desenhar_fileira_poltronas(itinerario, POLTRONA_02, &total_poltronas_disponiveis);
+	desenhar_fileira_poltronas(itinerario, POLTRONA_01, &total_poltronas_disponiveis);
+	desenhar_lateral_onibus();
+}
 
-    printf("%c\n", FRONTAL);
-    // poltronas pares corredor, lado esquerdo - fim
-
-    // poltronas ímpares janela da esquerda - início
-    recuo_margem_esquerda();
-    printf("%c ", FRONTAL);
+void exibir_poltronas(Itinerario itinerario) {
+    int total_poltronas_disponiveis = 0;
+    Bilhete bilhete;
     
-    int qtde_poltronas_livres;
-
-    for (i = 0; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
-		itinerario.bilhetes[i].tipo = IDOSO;
-		bilhete = itinerario.bilhetes[i];
-		exibir_poltrona(bilhete, &total_poltronas_disponiveis);
-	}
-
-    printf("%c\n", FRONTAL);
-    // poltronas ímpares janela da esquerda - fim
-
-    // lateral direita do ônibus - início
-    recuo_margem_esquerda();
-    printf("%c", ARESTA_INFERIOR_ESQUERDA);
-
-    for (i = 0; i < QTDE_POLTRONAS - COMPENSACAO; i++) {
-		if (i % 3 == 0) {
-            printf("%c", JANELA);  
-        } else {
-            printf("%c", LATERAL);
-        }
-	}
-
-    printf("%c", ARESTA_INFERIOR_DIREITA);
-    printf("\n");
-    // lateral direita do ônibus - fim
+    limpar_console();
+    
+    desenhar_onibus(itinerario, &total_poltronas_disponiveis);
     
     exibir_legenda_poltronas();
     
