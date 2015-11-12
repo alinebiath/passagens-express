@@ -421,7 +421,8 @@ void exibir_poltronas(Itinerario itinerario) {
 }
 
 void processar_venda(Itinerario *itinerario) {
-    int tipo_bilhete = escolher_tipo_bilhete(itinerario.bilhetes);
+    Bilhete *bilhetes = (*itinerario).bilhetes;
+    int tipo_bilhete = escolher_tipo_bilhete(bilhetes);
     
 }
 
@@ -486,9 +487,11 @@ int escolher_tipo_bilhete(Bilhete *vetor_bilhetes) {
 
         scanf("%d", &tipo_bilhete);
         
+        int i, poltronas_idoso_ocupadas = 0;
+        
         switch (tipo_bilhete) {
         	case IDOSO:
-        		int i, poltronas_idoso_ocupadas = 0;
+        		
 				
 				for (i = 0; i < QTDE_POLTRONAS; i++) {
 					Bilhete bilhete = vetor_bilhetes[i];
