@@ -43,6 +43,8 @@
 #define POLTRONA_03			2
 #define POLTRONA_04			3
 
+#define VOLTAR				0
+
 typedef struct Bilhete Bilhete;
 typedef struct Itinerario Itinerario;
 
@@ -418,8 +420,8 @@ void exibir_poltronas(Itinerario itinerario) {
 	getchar();
 }
 
-void processar_venda() {
-    int tipo_bilhete = escolher_tipo_bilhete();
+void processar_venda(Itinerario *itinerario) {
+    int tipo_bilhete = escolher_tipo_bilhete(itinerario.bilhetes);
     
 }
 
@@ -439,16 +441,7 @@ int escolher_poltrona(Bilhete *vetor_bilhetes, int tipo_bilhete) {
         	// just return zero
 		} else {
 			if (tipo_bilhete == IDOSO) {
-				int i, poltronas_idoso_ocupadas = 0;
-				
-				
-				for (i = 0; i < QTDE_POLTRONAS; i++) {
-					Bilhete bilhete = vetor_bilhetes[i];
-					if (bilhete.tipo == IDOSO) {
 						
-					
-					}
-				}		
 			}
 			
 		}
@@ -471,11 +464,12 @@ int escolher_poltrona(Bilhete *vetor_bilhetes, int tipo_bilhete) {
 			tipo_bilhete != ESTUDANTE && tipo_bilhete != IDOSO);
 	
 }
+
 void aplicar_desconto() {
 	
 }
 
-int escolher_tipo_bilhete() {
+int escolher_tipo_bilhete(Bilhete *vetor_bilhetes) {
 	int tipo_bilhete = -1;
     
     do {
@@ -486,7 +480,7 @@ int escolher_tipo_bilhete() {
 		printf(" %d - COMUM\n", COMUM);
     	printf(" %d - ESTUDANTE\n", ESTUDANTE);
     	printf(" %d - IDOSO\n", IDOSO);
-    	printf(" %d - Voltar\n\n", 0);
+    	printf(" %d - Voltar\n\n", VOLTAR);
 		
 		printf(" Tipo bilhete: ");
 
@@ -494,13 +488,23 @@ int escolher_tipo_bilhete() {
         
         switch (tipo_bilhete) {
         	case IDOSO:
-        		//aplicar desconto de 100%
+        		int i, poltronas_idoso_ocupadas = 0;
+				
+				for (i = 0; i < QTDE_POLTRONAS; i++) {
+					Bilhete bilhete = vetor_bilhetes[i];
+					if (bilhete.tipo == IDOSO) {
+						poltronas_idoso_ocupadas++;
+						if (poltronas_idoso_ocupadas == 2) {
+							printf(" Limite de passagens para idosos excedido!\n");
+							tipo_bilhete = -1;
+							getchar();
+							break;
+						}
+					}
+				}
         		break;
         	case ESTUDANTE:
-        		//aplicar desconto de 50%
-        		break;
         	case COMUM:
-        		break;
         	case SAIR:
 	       		break;
         	default:
