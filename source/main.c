@@ -82,17 +82,17 @@ void exibir_itinerarios(Itinerario *vetor_itinerarios);
 void exibir_menu_principal();
 void limpar_buffer_entrada();
 void opcao_invalida();
-void exibir_poltronas(Itinerario itinerario);
-void exibir_poltrona(Bilhete bilhete, int *poltronas_disponiveis);
+int exibir_poltronas(Itinerario *itinerario);
+void exibir_poltrona(Bilhete *bilhete, int *poltronas_disponiveis);
 void exibir_legenda_poltronas();
 void desenhar_lateral_onibus();
-void desenhar_fileira_poltronas(Itinerario itinerario, 
+void desenhar_fileira_poltronas(Itinerario *itinerario, 
 								int primeira_poltrona, 
 								int *total_poltronas_disponiveis);
 void desenhar_corredor();
 void processar_venda();
 int escolher_tipo_bilhete();
-int confirmar_itinerario_selecionado(Itinerario itinerario);
+int confirmar_itinerario_selecionado(Itinerario *itinerario);
 int calcular_poltronas_livres(Bilhete *vetor_bilhetes);
 Itinerario* obter_itinerarios_disponiveis();
 Itinerario criar_itinerario(int codigo_itinerario, 
@@ -182,7 +182,7 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
         if (codigo_itinerario >= 1 && codigo_itinerario <= 3) {
 			int indice = codigo_itinerario - 1;			
 			
-			Itinerario itinerario = vetor_itinerarios[indice];
+			Itinerario *itinerario = &vetor_itinerarios[indice];
 			
 			int confirmacao = confirmar_itinerario_selecionado(itinerario);
 			
@@ -208,17 +208,17 @@ void separador_linha() {
 	printf("\n");
 }
 
-int confirmar_itinerario_selecionado(Itinerario itinerario) {
+int confirmar_itinerario_selecionado(Itinerario *itinerario) {
 	int confirmacao = -1;
     
     do {
     	limpar_console();
 		separador_linha();
-		printf(" Dados do Itiner%crio\n\n", AAGUDO, itinerario.codigo);
-		printf(" Origem:\t%s\n", itinerario.origem);
-		printf(" Destino:\t%s\n", itinerario.destino);
-		printf(" Data:\t\t%s\n", itinerario.data);	
-		printf(" Valor:\t\t%.2f\n", itinerario.valor);
+		printf(" Dados do Itiner%crio\n\n", AAGUDO, (*itinerario).codigo);
+		printf(" Origem:\t%s\n", (*itinerario).origem);
+		printf(" Destino:\t%s\n", (*itinerario).destino);
+		printf(" Data:\t\t%s\n", (*itinerario).data);	
+		printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
 		separador_linha();
 	
 	
@@ -350,15 +350,16 @@ void desenhar_lateral_onibus() {
     printf("\n");
 }
 
-void desenhar_fileira_poltronas(Itinerario itinerario, int primeira_poltrona, int *total_poltronas_disponiveis) {
+void desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltrona, int *total_poltronas_disponiveis) {
     recuo_margem_esquerda();
     printf("%c ", FRONTAL);
 
 	int i;
-	Bilhete bilhete;
+	Bilhete *vetor_bilhetes = (*itinerario).bilhetes;
+	Bilhete *bilhete;
 	
     for (i = primeira_poltrona; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
-        bilhete = itinerario.bilhetes[i];
+        bilhete = &vetor_bilhetes[i];
         exibir_poltrona(bilhete, total_poltronas_disponiveis);
 	}
 
@@ -378,8 +379,7 @@ void desenhar_corredor() {
     printf("%c\n", FRONTAL);
 }
 
-
-void desenhar_onibus(Itinerario itinerario, int *total_poltronas_disponiveis) {
+void desenhar_onibus(Itinerario *itinerario, int *total_poltronas_disponiveis) {
 	// disposição dos assentos seguindo o modelo de empresa Cometa
 	desenhar_lateral_onibus();
     desenhar_fileira_poltronas(itinerario, POLTRONA_03, total_poltronas_disponiveis);
@@ -390,9 +390,8 @@ void desenhar_onibus(Itinerario itinerario, int *total_poltronas_disponiveis) {
 	desenhar_lateral_onibus();
 }
 
-void exibir_poltronas(Itinerario itinerario) {
+int exibir_poltronas(Itinerario* itinerario) {
     int total_poltronas_disponiveis = 0;
-    Bilhete bilhete;
     
     limpar_console();
     
@@ -402,27 +401,38 @@ void exibir_poltronas(Itinerario itinerario) {
     
     printf("\n");
     recuo_margem_esquerda();
-    printf("%s x %s", itinerario.origem, itinerario.destino);
+    printf("%s x %s", (*itinerario).origem, (*itinerario).destino);
     printf("\n");
     recuo_margem_esquerda();
-    printf("Data: %s", itinerario.data);
+    printf("Data: %s", (*itinerario).data);
     printf("\n");
     recuo_margem_esquerda();
-    printf("Valor: %.2f", itinerario.valor);
+    printf("Valor: %.2f", (*itinerario).valor);
     
     if (total_poltronas_disponiveis == 0) {
     	printf("\n\n N%co h%c mais poltronas livres!", ATIL, AAGUDO);
+    	getchar();
 	} else {
 		printf("\n\n Total de poltronas livres: %d", total_poltronas_disponiveis);
-		processar_venda();
+		printf("\n %p", itinerario);
+		getchar();
+		
 	}
-    
-	getchar();
+	
+	return total_poltronas_disponiveis;
+	
 }
 
 void processar_venda(Itinerario *itinerario) {
     Bilhete *bilhetes = (*itinerario).bilhetes;
     int tipo_bilhete = escolher_tipo_bilhete(bilhetes);
+    printf(" %d - TIPO\n", tipo_bilhete);
+    getchar();
+    getchar();
+    if (tipo_bilhete > 0) {
+        processar_venda(itinerario);
+    }
+    
     
 }
 
@@ -470,8 +480,9 @@ void aplicar_desconto() {
 	
 }
 
-int escolher_tipo_bilhete(Bilhete *vetor_bilhetes) {
+int escolher_tipo_bilhete(Itinerario *itinerario) {
 	int tipo_bilhete = -1;
+	Bilhete *vetor_bilhetes = (*itinerario).bilhetes;
     
     do {
     	//limpar_console();
@@ -491,15 +502,13 @@ int escolher_tipo_bilhete(Bilhete *vetor_bilhetes) {
         
         switch (tipo_bilhete) {
         	case IDOSO:
-        		
-				
 				for (i = 0; i < QTDE_POLTRONAS; i++) {
 					Bilhete bilhete = vetor_bilhetes[i];
 					if (bilhete.tipo == IDOSO) {
 						poltronas_idoso_ocupadas++;
 						if (poltronas_idoso_ocupadas == 2) {
 							printf(" Limite de passagens para idosos excedido!\n");
-							tipo_bilhete = -1;
+							tipo_bilhete = 0;
 							getchar();
 							break;
 						}
@@ -512,9 +521,12 @@ int escolher_tipo_bilhete(Bilhete *vetor_bilhetes) {
 	       		break;
         	default:
         		opcao_invalida();
+        		//exibir_poltronas(itinerario);
 		}
 	} while (tipo_bilhete != SAIR && tipo_bilhete != COMUM && 
 			tipo_bilhete != ESTUDANTE && tipo_bilhete != IDOSO);
+    
+    return tipo_bilhete;
 }
 
 void exibir_legenda_poltronas() {
@@ -539,7 +551,7 @@ Itinerario * obter_itinerarios_disponiveis() {
     return vetor_itinerarios;
 }
 
-void exibir_poltrona(Bilhete var_bilhete, int *poltronas_disponives) {
+void exibir_poltrona(Bilhete *var_bilhete, int *poltronas_disponives) {
     HANDLE h = GetStdHandle (STD_OUTPUT_HANDLE);
     WORD wOldColorAttrs;
     CONSOLE_SCREEN_BUFFER_INFO csbiInfo;
@@ -547,18 +559,19 @@ void exibir_poltrona(Bilhete var_bilhete, int *poltronas_disponives) {
     /* Primeiro, salvamos a atual configuração de cores do console */
     GetConsoleScreenBufferInfo(h, &csbiInfo);
     wOldColorAttrs = csbiInfo.wAttributes;
+
     
-    if (var_bilhete.tipo == LIVRE) {
+    if ((*var_bilhete).tipo == LIVRE) {
         /* Definimos as novas informações de cores do console */
         /* FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY	*/
         SetConsoleTextAttribute (h, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
-        printf("%02d ", var_bilhete.numero_poltrona);
+        printf("%02d ", (*var_bilhete).numero_poltrona);
         (*poltronas_disponives)++;
     } else {
         /* Definimos as novas informações de cores do console */
         /* FOREGROUND_BLUE | FOREGROUND_GREEN | FOREGROUND_RED | FOREGROUND_INTENSITY	*/
         SetConsoleTextAttribute (h, FOREGROUND_RED | FOREGROUND_INTENSITY);
-        printf("%02d ", var_bilhete.numero_poltrona);
+        printf("%02d ", (*var_bilhete).numero_poltrona);
     }
 
     /* Restaurando as cores originais */
