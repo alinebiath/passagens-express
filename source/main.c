@@ -181,21 +181,28 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
     
     /* executa até o usuário escolher voltar */
     do {
-        exibir_itinerarios(vetor_itinerarios);
-        printf(" Escolha o itiner%crio: ", AAGUDO);        
+        printf(" Escolha o itiner%crio: ", AAGUDO);
+		exibir_itinerarios(vetor_itinerarios);
 
         scanf("%d", &codigo_itinerario);
         
         if (codigo_itinerario >= 1 && codigo_itinerario <= 3) {
-			int indice = codigo_itinerario - 1;			
+			int indice = codigo_itinerario - 1;
 			
 			Itinerario *itinerario = &vetor_itinerarios[indice];
 			pointer("vender_passagem - do while", itinerario);
+			getchar();
 			
 			int confirmacao = confirmar_itinerario_selecionado(itinerario);
 			
 			if (confirmacao == SIM) {
-				exibir_poltronas(itinerario);
+				pointer("antes exibir poltronas: %p", itinerario);
+				int poltronas = exibir_poltronas(itinerario);
+				pointer("depois exibir poltronas: %p", itinerario);
+				if(poltronas > 0) {
+					processar_venda(itinerario);
+				}
+				
 			}
         } else if (codigo_itinerario == SAIR) {
 			
@@ -217,10 +224,11 @@ void separador_linha() {
 }
 
 int confirmar_itinerario_selecionado(Itinerario *itinerario) {
+	pointer("confirmar_itinerario_selecionado > ", itinerario);
 	int confirmacao = -1;
     
     do {
-    	limpar_console();
+    	//limpar_console();
 		separador_linha();
 		printf(" Dados do Itiner%crio\n\n", AAGUDO, (*itinerario).codigo);
 		printf(" Origem:\t%s\n", (*itinerario).origem);
@@ -239,7 +247,12 @@ int confirmar_itinerario_selecionado(Itinerario *itinerario) {
         
         switch (confirmacao) {
         	case SIM:
+        		printf("Confirmado Sim\n");
+        		getchar();
+        		break;
         	case NAO:
+        		printf("Confirmado Nao\n");
+        		getchar();
         		break;
         	default:
         		opcao_invalida();
@@ -301,15 +314,17 @@ void exibir_itinerarios(Itinerario *itinerarios) {
 
     int index;
     for(index = 0; index < QTDE_ITINERARIOS; index++) {
-    	printf("exibir_itinerarios > itinerarios: %p\n", itinerarios);
-        printf(" %d - %s x %s\n", 
+    	//printf("exibir_itinerarios > itinerarios: %p\n", itinerarios);
+        printf(" %d - %s x %s *p->%p\n", 
                 (*itinerarios).codigo,
                 (*itinerarios).origem, 
-                (*itinerarios).destino);
+                (*itinerarios).destino,
+				itinerarios);
         itinerarios++;
     }
-
-	itinerarios = &itinerarios[0];
+	itinerarios -= QTDE_ITINERARIOS;
+	//itinerarios = &itinerarios[0];
+	pointer("exibir_itinerarios > saindo >", itinerarios);
     printf(" %d - Voltar ao menu anterior\n\n", SAIR);
 }
 
@@ -439,8 +454,8 @@ int exibir_poltronas(Itinerario* itinerario) {
 }
 
 void processar_venda(Itinerario *itinerario) {
-    Bilhete *bilhetes = (*itinerario).bilhetes;
-    int tipo_bilhete = escolher_tipo_bilhete(bilhetes);
+    
+    int tipo_bilhete = escolher_tipo_bilhete(itinerario);
     printf(" %d - TIPO\n", tipo_bilhete);
     getchar();
     getchar();
@@ -494,8 +509,8 @@ int escolher_poltrona(Bilhete *vetor_bilhetes, int tipo_bilhete) {
 
 int escolher_tipo_bilhete(Itinerario *itinerario) {
 	int tipo_bilhete = -1;
-	Bilhete *vetor_bilhetes = (*itinerario).bilhetes;
-    
+    pointer("escolher tipo bilhete: %p", itinerario);
+    Bilhete *vetor_bilhetes = (*itinerario).bilhetes;
     do {
     	//limpar_console();
 		printf("\n\n");
@@ -533,7 +548,8 @@ int escolher_tipo_bilhete(Itinerario *itinerario) {
 	       		break;
         	default:
         		opcao_invalida();
-        		//exibir_poltronas(itinerario);
+        		pointer("saindo escolher tipo bilhete: %p", itinerario);
+        		exibir_poltronas(itinerario);
 		}
 	} while (tipo_bilhete != SAIR && tipo_bilhete != COMUM && 
 			tipo_bilhete != ESTUDANTE && tipo_bilhete != IDOSO);
