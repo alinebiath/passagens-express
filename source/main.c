@@ -104,8 +104,7 @@ void criar_itinerario(int codigo_itinerario,
 							Itinerario *novo_itinerario);
 
 void pointer(char* message, Itinerario* itinerario) {
-	printf(" %s > *p-> %p\n", message, itinerario);
-	getchar();
+	printf(" %s > %x\n", message, itinerario);
 }
 //==============================================================================
 //  Função principal.
@@ -120,7 +119,7 @@ int main(int argc, char *argv[]) {
     int opcao = -1;
     
     Itinerario *vetor_itinerarios = obter_itinerarios_disponiveis();
-    pointer("main", vetor_itinerarios);
+    pointer("1 - main", vetor_itinerarios);
     
 	/* executa até o usuário escolher SAIR */
     do {
@@ -177,7 +176,7 @@ void limpar_console(){
 void vender_passagem(Itinerario *vetor_itinerarios) {
 
     int codigo_itinerario = -1;
-    pointer("vender_passagem", vetor_itinerarios);
+    pointer("1 - vender_passagem", vetor_itinerarios);
     
     /* executa até o usuário escolher voltar */
     do {
@@ -190,19 +189,18 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
 			int indice = codigo_itinerario - 1;
 			
 			Itinerario *itinerario = &vetor_itinerarios[indice];
-			pointer("vender_passagem - do while", itinerario);
+			pointer("2 - vender_passagem", itinerario);
 			getchar();
 			
 			int confirmacao = confirmar_itinerario_selecionado(itinerario);
 			
 			if (confirmacao == SIM) {
-				pointer("antes exibir poltronas: %p", itinerario);
+				pointer("3 - vender_passagem", itinerario);
 				int poltronas = exibir_poltronas(itinerario);
-				pointer("depois exibir poltronas: %p", itinerario);
+				pointer("4 - vender_passagem", itinerario);
 				if(poltronas > 0) {
 					processar_venda(itinerario);
 				}
-				
 			}
         } else if (codigo_itinerario == SAIR) {
 			
@@ -224,7 +222,7 @@ void separador_linha() {
 }
 
 int confirmar_itinerario_selecionado(Itinerario *itinerario) {
-	pointer("confirmar_itinerario_selecionado > ", itinerario);
+	pointer("1 - confirmar_itinerario_selecionado", itinerario);
 	int confirmacao = -1;
     
     do {
@@ -271,16 +269,13 @@ void consultar_caixa() {
 	getchar();
 }
 
-/*
-    Retorna um <itinerario> conforme parâmetros fornecidos.
-*/
-void criar_itinerario(int codigo_itinerario,
-                            int numero_onibus,
-                            char *origem, 
-                            char *destino, 
-                            char *data_partida, 
-                            float valor,
-							Itinerario *novo_itinerario) {
+void criar_itinerario(  int codigo_itinerario,
+                        int numero_onibus,
+                        char *origem, 
+                        char *destino, 
+                        char *data_partida, 
+                        float valor,
+						Itinerario *novo_itinerario   ) {
     
     (*novo_itinerario).codigo = codigo_itinerario;
     (*novo_itinerario).numero_onibus = numero_onibus;
@@ -299,7 +294,7 @@ void criar_itinerario(int codigo_itinerario,
         (*novo_itinerario).bilhetes[indice].itinerario = novo_itinerario;
     }
     
-	printf("criar_itinerario > itinerario: %p\n", novo_itinerario);			
+	pointer("1 - criar_itinerario", novo_itinerario);
 }
 
 /*
@@ -315,7 +310,7 @@ void exibir_itinerarios(Itinerario *itinerarios) {
     int index;
     for(index = 0; index < QTDE_ITINERARIOS; index++) {
     	//printf("exibir_itinerarios > itinerarios: %p\n", itinerarios);
-        printf(" %d - %s x %s *p->%p\n", 
+        printf(" %d - %s x %s \t%x\n", 
                 (*itinerarios).codigo,
                 (*itinerarios).origem, 
                 (*itinerarios).destino,
@@ -324,8 +319,9 @@ void exibir_itinerarios(Itinerario *itinerarios) {
     }
 	itinerarios -= QTDE_ITINERARIOS;
 	//itinerarios = &itinerarios[0];
-	pointer("exibir_itinerarios > saindo >", itinerarios);
+	
     printf(" %d - Voltar ao menu anterior\n\n", SAIR);
+    pointer("1 - exibir_itinerarios", itinerarios);
 }
 
 /*
@@ -422,7 +418,7 @@ void desenhar_onibus(Itinerario *itinerario, int *total_poltronas_disponiveis) {
 }
 
 int exibir_poltronas(Itinerario* itinerario) {
-	printf("exibir_poltronas > itinerario: %p\n", itinerario);
+	printf("1 - exibir_poltronas", itinerario);
     int total_poltronas_disponiveis = 0;
     
     //limpar_console();
@@ -454,7 +450,7 @@ int exibir_poltronas(Itinerario* itinerario) {
 }
 
 void processar_venda(Itinerario *itinerario) {
-    
+    pointer("1 - processar_venda", itinerario);
     int tipo_bilhete = escolher_tipo_bilhete(itinerario);
     printf(" %d - TIPO\n", tipo_bilhete);
     getchar();
@@ -567,17 +563,18 @@ void exibir_legenda_poltronas() {
     printf("\n");
 }
 
-/*
-    Retorna um vetor com QTDE_ITINERARIOS elementos do tipo <itinerario>
-*/
-Itinerario * obter_itinerarios_disponiveis() {
+Itinerario *obter_itinerarios_disponiveis() {
     
-    Itinerario *vetor_itinerarios = (Itinerario*) malloc(QTDE_ITINERARIOS * sizeof(Itinerario));
-    criar_itinerario(1, 100, "Campinas", "Santos", "26/10/2015", 55.00, &vetor_itinerarios[0]);
-    criar_itinerario(2, 200, "Campinas", "Cerquilho", "26/10/2015", 45.00, &vetor_itinerarios[1]);
-
-	pointer("obter_itinerarios_disponiveis > vetor 0: ", &vetor_itinerarios[0]);
-	pointer("obter_itinerarios_disponiveis > vetor 1: ", &vetor_itinerarios[1]);
+    Itinerario *vetor_itinerarios = malloc(QTDE_ITINERARIOS * sizeof(Itinerario));
+    pointer("1 - obter_itinerarios_disponiveis", vetor_itinerarios);
+    criar_itinerario(1, 100, "Campinas", "Santos", "26/10/2015", 55.00, vetor_itinerarios);
+    
+    vetor_itinerarios++;
+    
+    pointer("2 - obter_itinerarios_disponiveis", vetor_itinerarios);
+    criar_itinerario(2, 200, "Campinas", "Cerquilho", "26/10/2015", 45.00, vetor_itinerarios);
+    
+    vetor_itinerarios--;
 	
     return vetor_itinerarios;
 }
