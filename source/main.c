@@ -11,7 +11,7 @@
 #define OTIL    228
 #define IAGUDO  161
 
-#define QTDE_POLTRONAS 8
+#define QTDE_POLTRONAS 44
 
 #define RECUO_MARGEM_ESQUERDA   24
 #define VAZIO                   32
@@ -220,7 +220,6 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
 	} while (codigo_itinerario != SAIR);
 }
 
-
 void consultar_caixa(Itinerario *itinerarios) {
     aux_imprimir_funcionalidade("Consultar Caixa");
 	getchar();
@@ -251,37 +250,16 @@ void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios) {
         do {
             poltrona_escolhida = aux_escolher_poltrona(itinerario, tipo_bilhete);
             if (poltrona_escolhida != VOLTAR) {
+                // inicio confirmar a venda
                 int indice = poltrona_escolhida - 1;
                 Bilhete *bilhete = &(*itinerario).bilhetes[indice];
                 (*bilhete).tipo = tipo_bilhete;
-                
-                switch (tipo_bilhete) {
-                    case COMUM:
-                        (*bilhete).valor_pago = (*itinerario).valor;
-                        break;
-                    case ESTUDANTE:
-                        (*bilhete).valor_pago = (*itinerario).valor * 0.5;
-                        break;
-                    case IDOSO:
-                        (*bilhete).valor_pago = 0;
-                        break;
-                }
-                
-                printf(
-                    "Poltrona: %d - tipo: %d - valor pago: %.2f\n", 
-                    (*bilhete).numero_poltrona, 
-                    (*bilhete).tipo,
-                    (*bilhete).valor_pago
-                );
-                getchar();
-                getchar();
+                aux_finalizar_venda(bilhete);
                 // confirmar a venda
             }
             
         } while (poltrona_escolhida == OPCAO_INVALIDA);
-    }
-   
-    //vender_passagem(vetor_itinerarios);
+    }    
 }
 
 //==============================================================================
@@ -312,7 +290,16 @@ int aux_escolher_poltrona(Itinerario *itinerario, int tipo_bilhete) {
             aux_imprimir_opcao_invalida();
             poltrona_escolhida = OPCAO_INVALIDA;
 		} else {
+		    int indice = poltrona_escolhida - 1;
+		    Bilhete *bilhete = &(*itinerario).bilhetes[indice];
 		    
+		    if ((*bilhete).tipo != LIVRE) {
+		        printf("\n Poltrona j%c vendida. Por favor, escolha outra poltrona.", AAGUDO);
+		        poltrona_escolhida = OPCAO_INVALIDA;
+		        getchar();
+		        getchar();
+            }
+
         }
 	} while (poltrona_escolhida == OPCAO_INVALIDA);
 			
@@ -404,6 +391,7 @@ void aux_imprimir_itinerarios(Itinerario *itinerarios) {
 }
 
 void aux_recuar_margem_esquerda() {
+    //return;
     int i;
     for (i = 0; i < RECUO_MARGEM_ESQUERDA; i++) {
         printf("%c", VAZIO);
@@ -662,8 +650,9 @@ int aux_escolher_tipo_bilhete(Itinerario *itinerario) {
 					if (bilhete.tipo == IDOSO) {
 						poltronas_idoso_ocupadas++;
 						if (poltronas_idoso_ocupadas == 2) {
-							printf(" Limite de passagens para idosos excedido!\n");
-							tipo_bilhete = 0;
+							printf("\n\n Limite de passagens para idosos excedido!");
+							tipo_bilhete = OPCAO_INVALIDA;
+							getchar();
 							getchar();
 							break;
 						}
@@ -685,6 +674,59 @@ int aux_escolher_tipo_bilhete(Itinerario *itinerario) {
 }
 
 void aux_finalizar_venda(Bilhete *bilhete) {
+                    
+    Itinerario *itinerario = (*bilhete).itinerario;
+    double valor_base = (*itinerario).valor;
     
+    switch ((*bilhete).tipo) {
+        case COMUM:
+            (*bilhete).valor_pago = valor_base;
+            break;
+        case ESTUDANTE:
+            (*bilhete).valor_pago = valor_base * 0.5;
+            break;
+        case IDOSO:
+            (*bilhete).valor_pago = 0;
+            break;
+    }
+    
+    int confirmacao;
+    
+    do {
+        confirmacao = OPCAO_INVALIDA;
+		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Venda");
+
+		printf(" Origem:\t%s\n", (*itinerario).origem);
+		printf(" Destino:\t%s\n", (*itinerario).destino);
+		printf(" Data:\t\t%s\n", (*itinerario).data);	
+		printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
+		printf(" Valor Final:\t%.2f\n", (*bilhete).valor_pago);
+		
+		aux_imprimir_separador_linha();
+
+	    printf(" %d - Sim\n", SIM);
+		printf(" %d - N%co\n", NAO, ATIL);
+		aux_imprimir_separador_linha();
+		printf(" Confirma? : ");
+
+        scanf("%d", &confirmacao);
+        
+        if (confirmacao < SIM || confirmacao > NAO) {
+            aux_imprimir_opcao_invalida();
+        }
+		
+	} while (confirmacao < SIM || confirmacao > NAO);
+	
+	if (confirmacao == NAO) {
+	    (*bilhete).valor_pago = 0;
+	    (*bilhete).tipo = LIVRE;
+	    printf("\n Venda Cancelada! Pressione qualquer tecla para continuar!");
+	    getchar();
+	    getchar();
+    } else if (confirmacao == SIM) {
+        printf("\n Venda Conclu%cda com Sucesso! Pressione qualquer tecla para continuar!", IAGUDO);
+	    getchar();
+	    getchar();
+    }
 }
 
