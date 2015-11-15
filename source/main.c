@@ -1,17 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <windows.h>
+#include <time.h>
 
 #define COLUNAS 80
 #define LINHAS  45
 
-#define CEDILHA 135
-#define ATIL    198
-#define AAGUDO  160
-#define OTIL    228
-#define IAGUDO  161
+#define CEDILHA         135
+#define ATIL            198
+#define AAGUDO          160
+#define OTIL            228
+#define IAGUDO          161
+#define OCIRCUNFLEXO    147
+#define NUMERAL         167
 
-#define QTDE_POLTRONAS 44
+#define QTDE_POLTRONAS 8 // use múltiplos de 4, máximo até 40 (4, 8, 12, ..., 40)
 
 #define RECUO_MARGEM_ESQUERDA   24
 #define VAZIO                   32
@@ -70,9 +73,10 @@ struct Bilhete {
 //==============================================================================
 struct Itinerario {
     char    codigo;
-    char    origem[10];
-    char    destino[10];
-    char    data[10];
+    char    *data;
+    char    *origem;
+    char    *destino;
+    char    *hora;
     double  valor;
     int     numero_onibus;
     Bilhete bilhetes[QTDE_POLTRONAS];
@@ -104,6 +108,7 @@ void aux_criar_itinerario(int codigo_itinerario,
                             char *origem, 
                             char *destino, 
                             char *data_partida, 
+                            char *hora_partida,
                             float valor,
 							Itinerario *novo_itinerario);
 
@@ -130,6 +135,16 @@ void pointer(char* message, Itinerario* itinerario) {
 //==============================================================================
 int main(int argc, char *argv[]) {
 
+    /*time_t rawtime;
+    struct tm * timeinfo;
+    char buffer [80];
+
+    time (&rawtime);
+    timeinfo = localtime (&rawtime);
+
+    strftime (buffer,80,"Now it's %I:%M%p.",timeinfo);
+    puts (buffer);
+  */
     //argc      = Quantidade de argumentos passados via linha de comando.
     //argv[0]   = Nome do programa (caminho absoluto)
     //argv[1]   = Primeiro argumento passado via linha de comando
@@ -282,7 +297,7 @@ int aux_escolher_poltrona(Itinerario *itinerario, int tipo_bilhete) {
 		
     	printf(" %d - Cancelar\n", CANCELAR);
     	aux_imprimir_separador_linha();
-        printf("\n Informe o n%c da poltrona desejada: ", 167);
+        printf("\n Informe o n%c da poltrona desejada: ", NUMERAL);
 
         scanf("%d", &poltrona_escolhida);
         
@@ -391,7 +406,6 @@ void aux_imprimir_itinerarios(Itinerario *itinerarios) {
 }
 
 void aux_recuar_margem_esquerda() {
-    //return;
     int i;
     for (i = 0; i < RECUO_MARGEM_ESQUERDA; i++) {
         printf("%c", VAZIO);
@@ -441,12 +455,12 @@ Itinerario *aux_carregar_itinerarios() {
     
     Itinerario *vetor_itinerarios = (Itinerario*) malloc(QTDE_ITINERARIOS * sizeof(Itinerario));
     //pointer("1 - obter_itinerarios_disponiveis", vetor_itinerarios);
-    aux_criar_itinerario(1, 100, "Campinas", "Santos", "26/10/2015", 55.33, vetor_itinerarios);
+    aux_criar_itinerario(1, 100, "Campinas", "Santos", "25/12/2015", "13h00", 55.33, vetor_itinerarios);
     
     vetor_itinerarios++;
     
     //pointer("2 - obter_itinerarios_disponiveis", vetor_itinerarios);
-    aux_criar_itinerario(2, 200, "Campinas", "Cerquilho", "26/10/2015", 45.99, vetor_itinerarios);
+    aux_criar_itinerario(2, 200, "Campinas", "Cerquilho", "25/12/2015", "09h00", 45.99, vetor_itinerarios);
     
     vetor_itinerarios--;
 	
@@ -463,11 +477,12 @@ int aux_confirmar_itinerario(Itinerario *itinerario) {
         confirmacao = OPCAO_INVALIDA;
     	//limpar_console();
 		//separador_linha();
-		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Itinerario");
+		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Itinerario ++");
 		//printf(" Dados do Itiner%crio\n\n", AAGUDO, (*itinerario).codigo);
 		printf(" Origem:\t%s\n", (*itinerario).origem);
 		printf(" Destino:\t%s\n", (*itinerario).destino);
-		printf(" Data:\t\t%s\n", (*itinerario).data);	
+		printf(" Data:\t\t%s\n", (*itinerario).data);
+		printf(" Hora:\t\t%s\n", (*itinerario).hora);	
 		printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
 		aux_imprimir_separador_linha();
 
@@ -492,15 +507,22 @@ void aux_criar_itinerario(int codigo_itinerario,
 							int numero_onibus,
 							char *origem, 
 							char *destino, 
-							char *data_partida, 
+							char *data_partida,
+							char *hora_partida,
 							float valor,
 							Itinerario *novo_itinerario) {
     
     (*novo_itinerario).codigo = codigo_itinerario;
     (*novo_itinerario).numero_onibus = numero_onibus;
+    (*novo_itinerario).origem = (char *) malloc(10 * sizeof(char));
+    (*novo_itinerario).destino = (char *) malloc(10 * sizeof(char));
+    (*novo_itinerario).data = (char *) malloc(10 * sizeof(char));
+    (*novo_itinerario).hora = (char *) malloc(5 * sizeof(char));
+    
     strcpy((*novo_itinerario).origem, origem);
     strcpy((*novo_itinerario).destino, destino);
     strcpy((*novo_itinerario).data, data_partida);
+    strcpy((*novo_itinerario).hora, hora_partida);
     (*novo_itinerario).valor = valor;
     
     int indice;
@@ -696,9 +718,10 @@ void aux_finalizar_venda(Bilhete *bilhete) {
         confirmacao = OPCAO_INVALIDA;
 		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Venda");
 
-		printf(" Origem:\t%s\n", (*itinerario).origem);
+        printf(" Origem:\t%s\n", (*itinerario).origem);
 		printf(" Destino:\t%s\n", (*itinerario).destino);
 		printf(" Data:\t\t%s\n", (*itinerario).data);	
+		printf(" Hora:\t\t%s\n", (*itinerario).hora);	
 		printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
 		printf(" Valor Final:\t%.2f\n", (*bilhete).valor_pago);
 		
@@ -724,7 +747,21 @@ void aux_finalizar_venda(Bilhete *bilhete) {
 	    getchar();
 	    getchar();
     } else if (confirmacao == SIM) {
-        printf("\n Venda Conclu%cda com Sucesso! Pressione qualquer tecla para continuar!", IAGUDO);
+        
+        aux_imprimir_funcionalidade("Dados do Bilhete");
+        
+        printf(" N%c %cnibus:\t%d\n", NUMERAL, OCIRCUNFLEXO, (*itinerario).numero_onibus);
+        printf(" Origem:\t%s\n", (*itinerario).origem);
+		printf(" Destino:\t%s\n", (*itinerario).destino);
+		printf(" Data:\t\t%s\n", (*itinerario).data);	
+		printf(" Hora:\t\t%s\n", (*itinerario).hora);	
+		printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
+		printf(" Valor Final:\t%.2f\n", (*bilhete).valor_pago);
+		printf(" Poltrona:\t%d\n", (*bilhete).numero_poltrona);	
+		
+		aux_imprimir_separador_linha();
+		
+        printf("\n Venda Conclu%cda com Sucesso!", IAGUDO);
 	    getchar();
 	    getchar();
     }
