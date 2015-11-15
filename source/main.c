@@ -114,7 +114,7 @@ void aux_criar_itinerario(int codigo_itinerario,
 
 
 void vender_passagem(Itinerario *var_itinerario);
-void consultar_caixa(Itinerario *tinerarios);
+void consultar_caixa();
 void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios);
 
 int aux_verificar_poltronas_livres(Itinerario *itinerario);
@@ -129,6 +129,8 @@ void pointer(char* message, Itinerario* itinerario) {
 	printf(" %s > %x\n", message, itinerario);
 }
 
+Bilhete *movimentacoes;
+int qtde_vendas = 0;
 
 //==============================================================================
 //  Função principal.
@@ -169,7 +171,7 @@ int main(int argc, char *argv[]) {
         if (opcao == VENDER_PASSAGEM) {
             vender_passagem(vetor_itinerarios);
         } else if (opcao == CONSULTAR_CAIXA) {
-            consultar_caixa(vetor_itinerarios);
+            consultar_caixa();
         } else if (opcao == SAIR) {
             aux_finalizar_aplicativo();
         } else {
@@ -235,8 +237,58 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
 	} while (codigo_itinerario != SAIR);
 }
 
-void consultar_caixa(Itinerario *itinerarios) {
+void consultar_caixa() {
     aux_imprimir_funcionalidade("Consultar Caixa");
+    if (qtde_vendas == 0) {
+        printf("\n Nao existem movimentacoes!");
+    } else {
+        
+        printf(" Data\t\t");
+        printf(" Origem\t\t");
+        printf(" Destino\t");
+        printf(" Tipo\t\t");
+        printf(" Valor\t");
+	    printf("\n");
+        aux_imprimir_separador_linha();		    
+        
+        int i;
+        float total = 0;
+        
+        for (i = 0; i < qtde_vendas; i++) {
+            Bilhete bilhete = movimentacoes[i];
+            Itinerario *itinerario = bilhete.itinerario;
+            
+            printf(" %s\t", (*itinerario).data);	//trocar
+            printf(" %s\t", (*itinerario).origem);
+            printf(" %s\t\t", (*itinerario).destino);
+            switch (bilhete.tipo) {
+                case COMUM:
+                    printf(" COMUM\t\t");
+                    break;
+                case ESTUDANTE:
+                    printf(" ESTUDANTE\t");
+                    break;
+                case IDOSO:
+                    printf(" IDOSO\t\t");
+                    break;
+            }
+            printf(" %.2f\t", bilhete.valor_pago);
+            total += bilhete.valor_pago;
+            
+            /*printf(" N%c %cnibus:\t%d\n", NUMERAL, OCIRCUNFLEXO, (*itinerario).numero_onibus);
+            printf(" Hora:\t\t%s\n", (*itinerario).hora);	
+		    printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
+		    printf(" Valor Final:\t%.2f\n", bilhete.valor_pago);
+		    printf(" Poltrona:\t%d\n", bilhete.numero_poltrona);*/
+		    
+		    printf("\n");
+		    
+        }
+        aux_imprimir_separador_linha();
+        printf(" \t\t\t\t\t\t\tSaldo:\t%.2f", total);
+        
+    }
+	getchar();
 	getchar();
 }
 
@@ -747,6 +799,18 @@ void aux_finalizar_venda(Bilhete *bilhete) {
 	    getchar();
 	    getchar();
     } else if (confirmacao == SIM) {
+        if (qtde_vendas == 0) {
+            qtde_vendas++;
+            movimentacoes = (Bilhete *) malloc(qtde_vendas * sizeof(Bilhete));
+            movimentacoes[qtde_vendas - 1] = (*bilhete);
+        } else {
+            Bilhete *temp = (Bilhete *) malloc(qtde_vendas * sizeof(Bilhete));
+            memcpy(temp, movimentacoes, (qtde_vendas * sizeof(Bilhete)));
+            qtde_vendas++;
+            movimentacoes = (Bilhete *) malloc(qtde_vendas * sizeof(Bilhete));
+            memcpy(movimentacoes, temp, (qtde_vendas * sizeof(Bilhete)));
+            movimentacoes[qtde_vendas - 1] = (*bilhete);
+        }
         
         aux_imprimir_funcionalidade("Dados do Bilhete");
         
