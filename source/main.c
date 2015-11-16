@@ -14,8 +14,6 @@
 #define OCIRCUNFLEXO    147
 #define NUMERAL         167
 
-#define QTDE_POLTRONAS 8 // use múltiplos de 4, máximo até 40 (4, 8, 12, ..., 40)
-
 #define RECUO_MARGEM_ESQUERDA   24
 #define VAZIO                   32
 
@@ -25,7 +23,6 @@
 #define ARESTA_INFERIOR_ESQUERDA    200
 #define ARESTA_INFERIOR_DIREITA     188
 #define FRONTAL                     186
-#define COMPENSACAO                 (QTDE_POLTRONAS / 4 - 1)
 #define CORREDOR                    32 // try 32, 176
 #define JANELA                      254
 
@@ -56,6 +53,7 @@
 
 typedef struct Bilhete Bilhete;
 typedef struct Itinerario Itinerario;
+typedef struct Onibus Onibus;
 
 //==============================================================================
 //  Estrutura de dados para armezenar o tipo do bilhete (COMUM, ESTUDANTE, 
@@ -66,6 +64,13 @@ struct Bilhete {
     int numero_poltrona;
     float valor_pago;
     Itinerario *itinerario;
+    char *data_venda;
+    char *hora_venda;
+};
+
+struct Onibus {
+    int numero;
+    int qtde_poltronas;
 };
 
 //==============================================================================
@@ -78,8 +83,8 @@ struct Itinerario {
     char    *destino;
     char    *hora;
     double  valor;
-    int     numero_onibus;
-    Bilhete bilhetes[QTDE_POLTRONAS];
+    Onibus  onibus;
+    Bilhete *bilhetes;
 };
 
 //==============================================================================
@@ -97,14 +102,15 @@ void aux_imprimir_separador_linha();
 void aux_exibir_poltronas(Itinerario *itinerario);
 void aux_desenhar_onibus(Itinerario *itinerario);
 void aux_imprimir_poltrona(Bilhete *bilhete);
-void aux_desenhar_lateral_direita_onibus();
-void aux_desenhar_lateral_esquerda_onibus();
+void aux_desenhar_lateral_direita_onibus(int qtde_poltronas);
+void aux_desenhar_lateral_esquerda_onibus(int qtde_poltronas);
 void aux_desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltrona);
-void aux_desenhar_corredor();
+void aux_desenhar_corredor(int qtde_poltronas);
 void aux_finalizar_venda(Bilhete *bilhete);
 void aux_finalizar_aplicativo();
 void aux_criar_itinerario(int codigo_itinerario, 
                             int numero_onibus,
+                            int numero_poltronas,
                             char *origem, 
                             char *destino, 
                             char *data_partida, 
@@ -144,9 +150,12 @@ int main(int argc, char *argv[]) {
     time (&rawtime);
     timeinfo = localtime (&rawtime);
 
-    strftime (buffer,80,"Now it's %I:%M%p.",timeinfo);
+    
+    strftime (buffer,80,"Now it's %d/%m/%Y %Hh%M.",timeinfo);
     puts (buffer);
-  */
+    getchar();
+    getchar();*/
+  
     //argc      = Quantidade de argumentos passados via linha de comando.
     //argv[0]   = Nome do programa (caminho absoluto)
     //argv[1]   = Primeiro argumento passado via linha de comando
@@ -243,11 +252,12 @@ void consultar_caixa() {
         printf("\n Nao existem movimentacoes!");
     } else {
         
-        printf(" Data\t\t");
-        printf(" Origem\t\t");
-        printf(" Destino\t");
-        printf(" Tipo\t\t");
-        printf(" Valor\t");
+        printf(" %10s", "Data");
+        printf(" %5s", "Hora");
+        printf(" %15s", "Origem");
+        printf(" %15s", "Destino");
+        printf(" %10s", "Tipo");
+        printf(" %10s", "Valor");
 	    printf("\n");
         aux_imprimir_separador_linha();		    
         
@@ -258,21 +268,22 @@ void consultar_caixa() {
             Bilhete bilhete = movimentacoes[i];
             Itinerario *itinerario = bilhete.itinerario;
             
-            printf(" %s\t", (*itinerario).data);	//trocar
-            printf(" %s\t", (*itinerario).origem);
-            printf(" %s\t\t", (*itinerario).destino);
+            printf(" %10s", bilhete.data_venda);
+            printf(" %5s", bilhete.hora_venda);
+            printf(" %15s", (*itinerario).origem);
+            printf(" %15s", (*itinerario).destino);
             switch (bilhete.tipo) {
                 case COMUM:
-                    printf(" COMUM\t\t");
+                    printf(" %10s", "COMUM");
                     break;
                 case ESTUDANTE:
-                    printf(" ESTUDANTE\t");
+                    printf(" %10s", "ESTUDANTE");
                     break;
                 case IDOSO:
-                    printf(" IDOSO\t\t");
+                    printf(" %10s", "IDOSO");
                     break;
             }
-            printf(" %.2f\t", bilhete.valor_pago);
+            printf(" %10.2f\t", bilhete.valor_pago);
             total += bilhete.valor_pago;
             
             /*printf(" N%c %cnibus:\t%d\n", NUMERAL, OCIRCUNFLEXO, (*itinerario).numero_onibus);
@@ -285,7 +296,7 @@ void consultar_caixa() {
 		    
         }
         aux_imprimir_separador_linha();
-        printf(" \t\t\t\t\t\t\tSaldo:\t%.2f", total);
+        printf(" %63s: %.2f", "Saldo", total);
         
     }
 	getchar();
@@ -353,7 +364,7 @@ int aux_escolher_poltrona(Itinerario *itinerario, int tipo_bilhete) {
 
         scanf("%d", &poltrona_escolhida);
         
-        if (poltrona_escolhida < 0 || poltrona_escolhida > QTDE_POLTRONAS) {
+        if (poltrona_escolhida < 0 || poltrona_escolhida > (*itinerario).onibus.qtde_poltronas) {
             aux_imprimir_opcao_invalida();
             poltrona_escolhida = OPCAO_INVALIDA;
 		} else {
@@ -505,14 +516,16 @@ void aux_desenhar_poltrona(Bilhete *var_bilhete) {
 
 Itinerario *aux_carregar_itinerarios() {
     
+    //# QTDE_POLTRONAS 8 // use múltiplos de 4, máximo até 40 (4, 8, 12, ..., 40)
+    
     Itinerario *vetor_itinerarios = (Itinerario*) malloc(QTDE_ITINERARIOS * sizeof(Itinerario));
     //pointer("1 - obter_itinerarios_disponiveis", vetor_itinerarios);
-    aux_criar_itinerario(1, 100, "Campinas", "Santos", "25/12/2015", "13h00", 55.33, vetor_itinerarios);
+    aux_criar_itinerario(1, 100, 8, "Campinas", "Santos", "25/12/2015", "13h00", 55.33, vetor_itinerarios);
     
     vetor_itinerarios++;
     
     //pointer("2 - obter_itinerarios_disponiveis", vetor_itinerarios);
-    aux_criar_itinerario(2, 200, "Campinas", "Cerquilho", "25/12/2015", "09h00", 45.99, vetor_itinerarios);
+    aux_criar_itinerario(2, 200, 40, "Campinas", "Sorocaba", "25/12/2015", "09h00", 45.99, vetor_itinerarios);
     
     vetor_itinerarios--;
 	
@@ -557,6 +570,7 @@ int aux_confirmar_itinerario(Itinerario *itinerario) {
 
 void aux_criar_itinerario(int codigo_itinerario,
 							int numero_onibus,
+							int qtde_poltronas,
 							char *origem, 
 							char *destino, 
 							char *data_partida,
@@ -565,7 +579,8 @@ void aux_criar_itinerario(int codigo_itinerario,
 							Itinerario *novo_itinerario) {
     
     (*novo_itinerario).codigo = codigo_itinerario;
-    (*novo_itinerario).numero_onibus = numero_onibus;
+    (*novo_itinerario).onibus.numero = numero_onibus;
+    (*novo_itinerario).onibus.qtde_poltronas = qtde_poltronas;
     (*novo_itinerario).origem = (char *) malloc(10 * sizeof(char));
     (*novo_itinerario).destino = (char *) malloc(10 * sizeof(char));
     (*novo_itinerario).data = (char *) malloc(10 * sizeof(char));
@@ -577,13 +592,17 @@ void aux_criar_itinerario(int codigo_itinerario,
     strcpy((*novo_itinerario).hora, hora_partida);
     (*novo_itinerario).valor = valor;
     
+    (*novo_itinerario).bilhetes = (Bilhete *) malloc(qtde_poltronas * sizeof(Bilhete));
+    
     int indice;
     
-    for (indice = 0; indice < QTDE_POLTRONAS; indice++) {
+    for (indice = 0; indice < qtde_poltronas; indice++) {
         int numero_poltrona = indice + 1;
         (*novo_itinerario).bilhetes[indice].numero_poltrona = numero_poltrona;
         (*novo_itinerario).bilhetes[indice].tipo = LIVRE;
         (*novo_itinerario).bilhetes[indice].valor_pago = 0;
+        (*novo_itinerario).bilhetes[indice].data_venda = (char *) malloc(10 * sizeof(char));
+        (*novo_itinerario).bilhetes[indice].hora_venda = (char *) malloc(5 * sizeof(char));
         (*novo_itinerario).bilhetes[indice].itinerario = novo_itinerario;
     }
     
@@ -607,21 +626,22 @@ void aux_imprimir_funcionalidade(char *funcionalidade) {
 void aux_desenhar_onibus(Itinerario *itinerario) {
 	//printf("1 - desenhar_onibus", itinerario);
 	// disposição dos assentos seguindo o modelo de empresa Cometa
-	aux_desenhar_lateral_direita_onibus();
+	aux_desenhar_lateral_direita_onibus((*itinerario).onibus.qtde_poltronas);
     aux_desenhar_fileira_poltronas(itinerario, POLTRONA_03);
     aux_desenhar_fileira_poltronas(itinerario, POLTRONA_04);
-    aux_desenhar_corredor();
+    aux_desenhar_corredor((*itinerario).onibus.qtde_poltronas);
 	aux_desenhar_fileira_poltronas(itinerario, POLTRONA_02);
 	aux_desenhar_fileira_poltronas(itinerario, POLTRONA_01);
-	aux_desenhar_lateral_esquerda_onibus();
+	aux_desenhar_lateral_esquerda_onibus((*itinerario).onibus.qtde_poltronas);
 }
 
-void aux_desenhar_lateral_direita_onibus() {
+void aux_desenhar_lateral_direita_onibus(int qtde_poltronas) {
     aux_recuar_margem_esquerda();
     printf("%c", ARESTA_SUPERIOR_ESQUERDA);
+    int compensacao = (qtde_poltronas / 4 - 1);
 
     int i;
-    for (i = 0; i < QTDE_POLTRONAS - COMPENSACAO; i++) {
+    for (i = 0; i < qtde_poltronas - compensacao; i++) {
     	// lógica para imprimir o caracter que representa a janela ou não
         if (i % 3 == 0) {
           printf("%c", JANELA);  
@@ -634,12 +654,14 @@ void aux_desenhar_lateral_direita_onibus() {
     printf("\n");
 }
 
-void aux_desenhar_lateral_esquerda_onibus() {
+void aux_desenhar_lateral_esquerda_onibus(int qtde_poltronas) {
     // lateral direita do ônibus - início
     aux_recuar_margem_esquerda();
     printf("%c", ARESTA_INFERIOR_ESQUERDA);
     int i;
-    for(i = 0; i < QTDE_POLTRONAS - COMPENSACAO; i++){
+    int compensacao = (qtde_poltronas / 4 - 1);
+    
+    for(i = 0; i < qtde_poltronas - compensacao; i++){
 		if(i % 3 == 0) {
             printf("%c", JANELA);  
         } else {
@@ -661,7 +683,7 @@ void aux_desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltron
 	Bilhete *vetor_bilhetes = (*itinerario).bilhetes;
 	Bilhete *bilhete;
 	
-    for (i = primeira_poltrona; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
+    for (i = primeira_poltrona; i < (*itinerario).onibus.qtde_poltronas; (i += SALTO_POLTRONA)) {
         bilhete = &vetor_bilhetes[i];
         aux_desenhar_poltrona(bilhete);
 	}
@@ -669,13 +691,13 @@ void aux_desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltron
     printf("%c\n", FRONTAL);
 }
 
-void aux_desenhar_corredor() {
+void aux_desenhar_corredor(int qtde_poltronas) {
 	int i;
 
     aux_recuar_margem_esquerda();
     printf("%c%c", FRONTAL, CORREDOR);
 
-    for (i = 3; i < QTDE_POLTRONAS; (i += SALTO_POLTRONA)) {
+    for (i = 3; i < qtde_poltronas; (i += SALTO_POLTRONA)) {
 		printf("%c%c%c", CORREDOR, CORREDOR, CORREDOR);
 	}
 
@@ -687,7 +709,7 @@ int aux_verificar_poltronas_livres(Itinerario *itinerario) {
 	Bilhete *bilhetes = (*itinerario).bilhetes;
 	int qtde_poltronas_livres = 0;
 	
-	for(i = 0; i < QTDE_POLTRONAS; i++) {
+	for(i = 0; i < (*itinerario).onibus.qtde_poltronas; i++) {
 	    if (bilhetes[i].tipo == LIVRE) {
 	        qtde_poltronas_livres++;
         }
@@ -719,7 +741,7 @@ int aux_escolher_tipo_bilhete(Itinerario *itinerario) {
         
         switch (tipo_bilhete) {
         	case IDOSO:
-				for (i = 0; i < QTDE_POLTRONAS; i++) {
+				for (i = 0; i < (*itinerario).onibus.qtde_poltronas; i++) {
 					Bilhete bilhete = vetor_bilhetes[i];
 					if (bilhete.tipo == IDOSO) {
 						poltronas_idoso_ocupadas++;
@@ -795,10 +817,20 @@ void aux_finalizar_venda(Bilhete *bilhete) {
 	if (confirmacao == NAO) {
 	    (*bilhete).valor_pago = 0;
 	    (*bilhete).tipo = LIVRE;
+	    
 	    printf("\n Venda Cancelada! Pressione qualquer tecla para continuar!");
 	    getchar();
 	    getchar();
     } else if (confirmacao == SIM) {
+        // obtendo a data e hora atual
+        //http://www.cplusplus.com/reference/ctime/strftime/
+        time_t rawtime;
+        struct tm * timeinfo;
+        time (&rawtime);
+        timeinfo = localtime (&rawtime);
+        strftime ((*bilhete).data_venda, 80, "%d/%m/%Y", timeinfo);
+        strftime ((*bilhete).hora_venda, 80, "%Hh%M", timeinfo);
+	    
         if (qtde_vendas == 0) {
             qtde_vendas++;
             movimentacoes = (Bilhete *) malloc(qtde_vendas * sizeof(Bilhete));
@@ -814,7 +846,7 @@ void aux_finalizar_venda(Bilhete *bilhete) {
         
         aux_imprimir_funcionalidade("Dados do Bilhete");
         
-        printf(" N%c %cnibus:\t%d\n", NUMERAL, OCIRCUNFLEXO, (*itinerario).numero_onibus);
+        printf(" N%c %cnibus:\t%d\n", NUMERAL, OCIRCUNFLEXO, (*itinerario).onibus.numero);
         printf(" Origem:\t%s\n", (*itinerario).origem);
 		printf(" Destino:\t%s\n", (*itinerario).destino);
 		printf(" Data:\t\t%s\n", (*itinerario).data);	
