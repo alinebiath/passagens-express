@@ -56,8 +56,7 @@ typedef struct Itinerario Itinerario;
 typedef struct Onibus Onibus;
 
 //==============================================================================
-//  Estrutura de dados para armezenar o tipo do bilhete (COMUM, ESTUDANTE, 
-//  IDOSO) , número da poltrona e valor pago pela passagem.
+//  Structs
 //==============================================================================
 struct Bilhete {
     int tipo;   
@@ -73,9 +72,6 @@ struct Onibus {
     int qtde_poltronas;
 };
 
-//==============================================================================
-//  Estrutura de dados para armezenar dados de um itinerário.
-//==============================================================================
 struct Itinerario {
     char    codigo;
     char    *data;
@@ -94,7 +90,7 @@ void aux_configurar_janela_console();
 void aux_limpar_janela_console();
 void aux_recuar_margem_esquerda();
 void aux_imprimir_titulo();
-void aux_imprimir_funcionalidade(char *funcionalidade);
+void aux_imprimir_funcionalidade(const char * funcionalidade, ...);
 void aux_imprimir_itinerarios(Itinerario *vetor_itinerarios);
 void aux_imprimir_menu_principal();
 void aux_imprimir_opcao_invalida();
@@ -104,7 +100,8 @@ void aux_desenhar_onibus(Itinerario *itinerario);
 void aux_imprimir_poltrona(Bilhete *bilhete);
 void aux_desenhar_lateral_direita_onibus(int qtde_poltronas);
 void aux_desenhar_lateral_esquerda_onibus(int qtde_poltronas);
-void aux_desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltrona);
+void aux_desenhar_fileira_poltronas(Itinerario *itinerario, 
+									int primeira_poltrona);
 void aux_desenhar_corredor(int qtde_poltronas);
 void aux_finalizar_venda(Bilhete *bilhete);
 void aux_finalizar_aplicativo();
@@ -117,24 +114,29 @@ void aux_criar_itinerario(int codigo_itinerario,
                             char *hora_partida,
                             float valor,
 							Itinerario *novo_itinerario);
-
-
-void vender_passagem(Itinerario *var_itinerario);
-void consultar_caixa();
-void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios);
-
 int aux_verificar_poltronas_livres(Itinerario *itinerario);
 int aux_escolher_tipo_bilhete(Itinerario *itinerario);
 int aux_escolher_poltrona(Itinerario *itinerario, int tipo_bilhete);
 int aux_confirmar_itinerario(Itinerario *itinerario);
-
-
 Itinerario* aux_carregar_itinerarios();
 
+//==============================================================================
+//  Declaração de funções principais.
+//==============================================================================
+void vender_passagem(Itinerario *var_itinerario);
+void consultar_caixa();
+void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios);
+
+//==============================================================================
+//  Declaração de funções de debug.
+//==============================================================================
 void pointer(char* message, Itinerario* itinerario) {
 	printf(" %s > %x\n", message, itinerario);
 }
 
+//==============================================================================
+//  Variáveis globais.
+//==============================================================================
 Bilhete *movimentacoes;
 int qtde_vendas = 0;
 
@@ -142,19 +144,6 @@ int qtde_vendas = 0;
 //  Função principal.
 //==============================================================================
 int main(int argc, char *argv[]) {
-
-    /*time_t rawtime;
-    struct tm * timeinfo;
-    char buffer [80];
-
-    time (&rawtime);
-    timeinfo = localtime (&rawtime);
-
-    
-    strftime (buffer,80,"Now it's %d/%m/%Y %Hh%M.",timeinfo);
-    puts (buffer);
-    getchar();
-    getchar();*/
   
     //argc      = Quantidade de argumentos passados via linha de comando.
     //argv[0]   = Nome do programa (caminho absoluto)
@@ -165,15 +154,13 @@ int main(int argc, char *argv[]) {
     int opcao;
     
     Itinerario *vetor_itinerarios = aux_carregar_itinerarios();
-    //pointer("1 - main", vetor_itinerarios);
     
 	/* executa até o usuário escolher SAIR */
     do {
-        //limpar_console();
-        //separador_linha();
+        
         opcao = OPCAO_INVALIDA;
 		aux_imprimir_menu_principal();
-        //separador_linha();
+        
 		printf("\n Escolha a op%c%co: ", CEDILHA, ATIL);
         scanf("%d", &opcao);
 
@@ -186,6 +173,7 @@ int main(int argc, char *argv[]) {
         } else {
             aux_imprimir_opcao_invalida();
 		}
+		
 	} while (opcao != SAIR);
 
     getchar();
@@ -201,7 +189,8 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
     /* executa até o usuário escolher voltar */
     do {
         codigo_itinerario = OPCAO_INVALIDA;
-        aux_imprimir_funcionalidade("Vender Passagem > Selecionar Itinerario");
+        
+        aux_imprimir_funcionalidade("Vender Passagem > Selecionar Itiner%crio", AAGUDO);
 		aux_imprimir_itinerarios(vetor_itinerarios);
 		printf(" %d - Voltar ao menu principal\n", VOLTAR);
 		aux_imprimir_separador_linha();
@@ -542,7 +531,8 @@ int aux_confirmar_itinerario(Itinerario *itinerario) {
         confirmacao = OPCAO_INVALIDA;
     	//limpar_console();
 		//separador_linha();
-		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Itinerario ++");
+		
+		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Itiner%crio", AAGUDO);
 		//printf(" Dados do Itiner%crio\n\n", AAGUDO, (*itinerario).codigo);
 		printf(" Origem:\t%s\n", (*itinerario).origem);
 		printf(" Destino:\t%s\n", (*itinerario).destino);
@@ -617,9 +607,14 @@ void aux_imprimir_titulo() {
     aux_imprimir_separador_linha();
 }
 
-void aux_imprimir_funcionalidade(char *funcionalidade) {
+void aux_imprimir_funcionalidade(const char * funcionalidade, ...) {
     aux_imprimir_titulo();
-    printf(" %s\n", funcionalidade);
+    printf(" ");
+    va_list args;
+  	va_start (args, funcionalidade);
+  	vprintf (funcionalidade, args);
+  	va_end (args);
+	printf("\n");
     aux_imprimir_separador_linha();
 }
 
