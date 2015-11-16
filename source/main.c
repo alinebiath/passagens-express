@@ -218,7 +218,6 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
             
                 if (confirmacao == SIM) {
     				int poltronas_livres = aux_verificar_poltronas_livres(selecionado);
-    				//printf("livres: %d\n ", poltronas_livres); getchar();
     				
     				if(poltronas_livres > 0) {
     					processar_venda(selecionado, vetor_itinerarios);
@@ -317,12 +316,10 @@ void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios) {
         do {
             poltrona_escolhida = aux_escolher_poltrona(itinerario, tipo_bilhete);
             if (poltrona_escolhida != VOLTAR) {
-                // inicio confirmar a venda
                 int indice = poltrona_escolhida - 1;
                 Bilhete *bilhete = &(*itinerario).bilhetes[indice];
                 (*bilhete).tipo = tipo_bilhete;
                 aux_finalizar_venda(bilhete);
-                // confirmar a venda
             }
             
         } while (poltrona_escolhida == OPCAO_INVALIDA);
@@ -423,8 +420,6 @@ void aux_limpar_janela_console(){
 
 void aux_imprimir_menu_principal() {
     aux_imprimir_funcionalidade("Menu Principal");
-    //printf(" Menu Principal\n");
-    //separador_linha();
     printf(" %d - Vender Passagem\n", VENDER_PASSAGEM);
     printf(" %d - Consultar Caixa\n", CONSULTAR_CAIXA);
     printf(" %d - Sair\n", SAIR);
@@ -471,7 +466,6 @@ void aux_imprimir_opcao_invalida() {
 }
 
 void aux_exibir_poltronas(Itinerario* itinerario) {
-	//printf("1 - exibir_poltronas", itinerario);
     aux_imprimir_funcionalidade("Vender Passagem > Selecionar Poltrona");
     aux_desenhar_onibus(itinerario);
     aux_imprimir_separador_linha();
@@ -508,12 +502,11 @@ Itinerario *aux_carregar_itinerarios() {
     //# QTDE_POLTRONAS 8 // use múltiplos de 4, máximo até 40 (4, 8, 12, ..., 40)
     
     Itinerario *vetor_itinerarios = (Itinerario*) malloc(QTDE_ITINERARIOS * sizeof(Itinerario));
-    //pointer("1 - obter_itinerarios_disponiveis", vetor_itinerarios);
+
     aux_criar_itinerario(1, 100, 8, "Campinas", "Santos", "25/12/2015", "13h00", 55.33, vetor_itinerarios);
     
     vetor_itinerarios++;
     
-    //pointer("2 - obter_itinerarios_disponiveis", vetor_itinerarios);
     aux_criar_itinerario(2, 200, 40, "Campinas", "Sorocaba", "25/12/2015", "09h00", 45.99, vetor_itinerarios);
     
     vetor_itinerarios--;
@@ -523,22 +516,19 @@ Itinerario *aux_carregar_itinerarios() {
 
 
 int aux_confirmar_itinerario(Itinerario *itinerario) {
-	
-	//pointer("1 - confirmar_itinerario", itinerario);
 	int confirmacao;
     
     do {
         confirmacao = OPCAO_INVALIDA;
-    	//limpar_console();
-		//separador_linha();
 		
 		aux_imprimir_funcionalidade("Vender Passagem > Confirmar Itiner%crio", AAGUDO);
-		//printf(" Dados do Itiner%crio\n\n", AAGUDO, (*itinerario).codigo);
+
 		printf(" Origem:\t%s\n", (*itinerario).origem);
 		printf(" Destino:\t%s\n", (*itinerario).destino);
 		printf(" Data:\t\t%s\n", (*itinerario).data);
 		printf(" Hora:\t\t%s\n", (*itinerario).hora);	
 		printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
+
 		aux_imprimir_separador_linha();
 
 	    printf(" %d - Sim\n", SIM);
@@ -595,8 +585,7 @@ void aux_criar_itinerario(int codigo_itinerario,
         (*novo_itinerario).bilhetes[indice].hora_venda = (char *) malloc(5 * sizeof(char));
         (*novo_itinerario).bilhetes[indice].itinerario = novo_itinerario;
     }
-    
-	//pointer("1 - aux_criar_itinerario", novo_itinerario);
+
 }
 
 void aux_imprimir_titulo() {
@@ -619,7 +608,6 @@ void aux_imprimir_funcionalidade(const char * funcionalidade, ...) {
 }
 
 void aux_desenhar_onibus(Itinerario *itinerario) {
-	//printf("1 - desenhar_onibus", itinerario);
 	// disposição dos assentos seguindo o modelo de empresa Cometa
 	aux_desenhar_lateral_direita_onibus((*itinerario).onibus.qtde_poltronas);
     aux_desenhar_fileira_poltronas(itinerario, POLTRONA_03);
@@ -670,7 +658,6 @@ void aux_desenhar_lateral_esquerda_onibus(int qtde_poltronas) {
 }
 
 void aux_desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltrona) {
-    //pointer("1 - desenhar_fileira_poltronas", itinerario);
 	aux_recuar_margem_esquerda();
     printf("%c ", FRONTAL);
 
@@ -756,7 +743,6 @@ int aux_escolher_tipo_bilhete(Itinerario *itinerario) {
 	       		break;
         	default:
         		aux_imprimir_opcao_invalida();
-        		//aux_exibir_poltronas(itinerario);
 		}
 	} while (tipo_bilhete != SAIR && tipo_bilhete != COMUM && 
 			tipo_bilhete != ESTUDANTE && tipo_bilhete != IDOSO);
