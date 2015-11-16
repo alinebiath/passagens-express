@@ -273,18 +273,13 @@ void consultar_caixa() {
             }
             printf(" %10.2f\t", bilhete.valor_pago);
             total += bilhete.valor_pago;
-            
-            /*printf(" N%c %cnibus:\t%d\n", NUMERAL, OCIRCUNFLEXO, (*itinerario).numero_onibus);
-            printf(" Hora:\t\t%s\n", (*itinerario).hora);	
-		    printf(" Valor:\t\t%.2f\n", (*itinerario).valor);
-		    printf(" Valor Final:\t%.2f\n", bilhete.valor_pago);
-		    printf(" Poltrona:\t%d\n", bilhete.numero_poltrona);*/
-		    
+
 		    printf("\n");
 		    
         }
         aux_imprimir_separador_linha();
         printf("%65s %.2f", "Saldo", total);
+        printf("\n Pressione uma tecla para voltar!");
         
     }
 	getchar();
