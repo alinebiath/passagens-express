@@ -249,7 +249,7 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
 void consultar_caixa() {
     aux_imprimir_funcionalidade("Consultar Caixa");
     if (qtde_vendas == 0) {
-        printf("\n Nao existem movimentacoes!");
+        printf("\n N%co existem movimenta%c%ces!", ATIL, CEDILHA, OTIL);
     } else {
         
         printf(" %10s", "Data");
