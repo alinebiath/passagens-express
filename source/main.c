@@ -367,7 +367,7 @@ int aux_escolher_poltrona(Itinerario *itinerario, int tipo_bilhete) {
         if (poltrona_escolhida < 0 || poltrona_escolhida > (*itinerario).onibus.qtde_poltronas) {
             aux_imprimir_opcao_invalida();
             poltrona_escolhida = OPCAO_INVALIDA;
-		} else {
+		} else if(poltrona_escolhida > 0) {
 		    int indice = poltrona_escolhida - 1;
 		    Bilhete *bilhete = &(*itinerario).bilhetes[indice];
 		    
