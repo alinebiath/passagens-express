@@ -296,7 +296,7 @@ void consultar_caixa() {
 		    
         }
         aux_imprimir_separador_linha();
-        printf(" %63s: %.2f", "Saldo", total);
+        printf("%65s %.2f", "Saldo", total);
         
     }
 	getchar();
