@@ -229,6 +229,8 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
                         getchar();
                     }
     			}
+            } else {
+                aux_imprimir_opcao_invalida();
             }
         }
 	} while (codigo_itinerario != SAIR);
