@@ -290,22 +290,7 @@ void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios) {
     int tipo_bilhete;
     int poltrona_escolhida;
     
-    do {
-        tipo_bilhete = OPCAO_INVALIDA;
-        poltrona_escolhida = OPCAO_INVALIDA;
-    
-        tipo_bilhete = aux_escolher_tipo_bilhete(itinerario);
-        
-        switch (tipo_bilhete) {
-            case IDOSO:
-            case ESTUDANTE:
-            case COMUM:
-            case CANCELAR:
-                break;
-            default:
-                aux_imprimir_opcao_invalida();
-        }
-    } while (tipo_bilhete == OPCAO_INVALIDA);
+    tipo_bilhete = aux_escolher_tipo_bilhete(itinerario);
     
     if (tipo_bilhete != CANCELAR) {
         do {
@@ -734,7 +719,7 @@ int aux_escolher_tipo_bilhete(Itinerario *itinerario) {
         		break;
         	case ESTUDANTE:
         	case COMUM:
-        	case SAIR:
+        	case CANCELAR:
 	       		break;
         	default:
         		aux_imprimir_opcao_invalida();
