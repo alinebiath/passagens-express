@@ -223,7 +223,7 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
     					processar_venda(selecionado, vetor_itinerarios);
     				} else {
     				    aux_exibir_poltronas(selecionado);
-    				    printf("\n N%co h%c poltronas dispon%cveis para este itinerario!", 
+    				    printf("\n N%co h%c poltronas dispon%cveis para este itiner%crio!", 
                         ATIL, AAGUDO, IAGUDO, AAGUDO);
                         getchar();
                         getchar();
