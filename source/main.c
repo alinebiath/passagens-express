@@ -23,7 +23,7 @@
 #define ARESTA_INFERIOR_ESQUERDA    200
 #define ARESTA_INFERIOR_DIREITA     188
 #define FRONTAL                     186
-#define CORREDOR                    32 // try 32, 176
+#define CORREDOR                    32 // use 32, 176
 #define JANELA                      254
 
 #define LIVRE               0
@@ -127,12 +127,6 @@ void vender_passagem(Itinerario *var_itinerario);
 void consultar_caixa();
 void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios);
 
-//==============================================================================
-//  Declaração de funções de debug.
-//==============================================================================
-void pointer(char* message, Itinerario* itinerario) {
-	printf(" %s > %x\n", message, itinerario);
-}
 
 //==============================================================================
 //  Variáveis globais.
@@ -144,11 +138,7 @@ int qtde_vendas = 0;
 //  Função principal.
 //==============================================================================
 int main(int argc, char *argv[]) {
-  
-    //argc      = Quantidade de argumentos passados via linha de comando.
-    //argv[0]   = Nome do programa (caminho absoluto)
-    //argv[1]   = Primeiro argumento passado via linha de comando
-    //arg[n]    = N argumento passado via linha de comando, sendo N diferente de zero
+    
     aux_configurar_janela_console();
     
     int opcao;
@@ -186,7 +176,7 @@ int main(int argc, char *argv[]) {
 void vender_passagem(Itinerario *vetor_itinerarios) {
     int codigo_itinerario;
     
-    /* executa até o usuário escolher voltar */
+    /* executa até o usuário escolher SAIR */
     do {
         codigo_itinerario = OPCAO_INVALIDA;
         
@@ -233,7 +223,7 @@ void vender_passagem(Itinerario *vetor_itinerarios) {
                 aux_imprimir_opcao_invalida();
             }
         }
-	} while (codigo_itinerario != SAIR);
+	} while (codigo_itinerario != VOLTAR);
 }
 
 void consultar_caixa() {
@@ -281,7 +271,7 @@ void consultar_caixa() {
         }
         aux_imprimir_separador_linha();
         printf("%65s %.2f", "Saldo", total);
-        printf("\n Pressione uma tecla para voltar!");
+        printf("\n Pressione ENTER para voltar!");
         
     }
 	getchar();
@@ -314,7 +304,7 @@ void processar_venda(Itinerario *itinerario, Itinerario *vetor_itinerarios) {
 
 void aux_finalizar_aplicativo() {
     aux_limpar_janela_console();
-    printf("\n Finalizando aplicativo... [Pressione qualquer tecla]");
+    printf("\n Finalizando aplicativo... [Pressione ENTER]");
     getchar();
 }
 
@@ -352,7 +342,7 @@ int aux_escolher_poltrona(Itinerario *itinerario, int tipo_bilhete) {
 	return poltrona_escolhida;
 }
 
-//http://stackoverflow.com/questions/17160553/making-the-console-window-bigger-in-c
+// fonte: http://stackoverflow.com/questions/17160553/making-the-console-window-bigger-in-c
 void aux_configurar_janela_console() {
     SMALL_RECT consoleWindowSize; 
 
@@ -370,33 +360,32 @@ void aux_configurar_janela_console() {
     consoleWindowSize.Bottom = coord.Y - 1;
 
     SetConsoleWindowInfo(hStdout, TRUE, &consoleWindowSize);
+    
+    SetConsoleTitle("Passagens Express");
 }
 
+
+// Fonte: http://www.tek-tips.com/viewthread.cfm?qid=76828
 void aux_limpar_janela_console(){
 
-    DWORD n;                            // Number of characters written
-    DWORD size;                        // Number of visible characters
-	COORD coord = {0, 0};                 // Top left screen position
-	CONSOLE_SCREEN_BUFFER_INFO csbi;   // Structure 
+    DWORD n;                           // Número de caracteres escritos
+    DWORD size;                        // Número de caracteres visíveis
+	COORD coord = {0, 0};              // Top left screen position
+	CONSOLE_SCREEN_BUFFER_INFO csbi;   // Estrutura
 
-    SetConsoleTitle("Passagens Express");
-
-	// Get a handle to the console
+	// Obtendo o handle (ponteiro) da janela do console
 	HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
 	
-    SMALL_RECT windowSize = {0, 80, 0, 30};
-    //SetConsoleWindowInfo(h, 1, &windowSize);
-
-    // Fill the structure csbi
+    // Preenchendo a estrutura csbi
 	GetConsoleScreenBufferInfo(h, &csbi);
 
-	// Find the number of characters to overwrite
+	// Número de caracteres a serem apagados
 	size = csbi.dwSize.X * csbi.dwSize.Y;
 
-	// Overwrite the screen buffer with whitespace
+	// Apagando o total de caracteres com espaços em branco
 	FillConsoleOutputCharacter(h, TEXT (' '), size, coord, &n);
 	
-	// Reset the cursor to the top left position
+	// Colocando o cursor no canto superior esquerdo da janela do console
 	SetConsoleCursorPosition(h, coord);
 }
 
@@ -431,7 +420,6 @@ void aux_imprimir_itinerarios(Itinerario *itinerarios) {
         itinerarios++;
     }
 	itinerarios -= QTDE_ITINERARIOS;
-	//itinerarios = &itinerarios[0];
 }
 
 void aux_recuar_margem_esquerda() {
@@ -526,7 +514,6 @@ int aux_confirmar_itinerario(Itinerario *itinerario) {
 		
 	} while (confirmacao < SIM || confirmacao > NAO);
 
-	//getchar();	
 	return confirmacao;
 }
 
@@ -620,7 +607,6 @@ void aux_desenhar_lateral_direita_onibus(int qtde_poltronas) {
 }
 
 void aux_desenhar_lateral_esquerda_onibus(int qtde_poltronas) {
-    // lateral direita do ônibus - início
     aux_recuar_margem_esquerda();
     printf("%c", ARESTA_INFERIOR_ESQUERDA);
     int i;
@@ -636,7 +622,6 @@ void aux_desenhar_lateral_esquerda_onibus(int qtde_poltronas) {
 
     printf("%c", ARESTA_INFERIOR_DIREITA);
     printf("\n");
-    // lateral direita do ônibus - fim
 }
 
 void aux_desenhar_fileira_poltronas(Itinerario *itinerario, int primeira_poltrona) {
@@ -781,12 +766,12 @@ void aux_finalizar_venda(Bilhete *bilhete) {
 	    (*bilhete).valor_pago = 0;
 	    (*bilhete).tipo = LIVRE;
 	    
-	    printf("\n Venda Cancelada! Pressione qualquer tecla para continuar!");
+	    printf("\n Venda Cancelada! Pressione ENTER para continuar!");
 	    getchar();
 	    getchar();
     } else if (confirmacao == SIM) {
         // obtendo a data e hora atual
-        //http://www.cplusplus.com/reference/ctime/strftime/
+        // fonte: http://www.cplusplus.com/reference/ctime/strftime/
         time_t rawtime;
         struct tm * timeinfo;
         time (&rawtime);
